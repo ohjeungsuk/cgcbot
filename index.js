@@ -28,7 +28,7 @@ client.on('message', msg => {
     msg.channel.send('응애 나 애기 핑구');
   }
   if (msg.content === '룰루') {
-    msg.channel.send('난나~~~~~~~');
+    msg.channel.send('난나~~~~~!!');
   }
   if (msg.content === '잘자요') {
     msg.channel.send('두루가~~~~~~!!!');
