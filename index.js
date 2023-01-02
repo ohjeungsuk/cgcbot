@@ -1,14 +1,3 @@
-const express = require('express');
-const app = express();
-const port = 5000
-
-
-app.get('/', (req, res) => res.send('BOT START!!'))
-
-app.listen(port, () =>
-  console.log('START')
-);
-
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
@@ -50,17 +39,8 @@ client.on('message', msg => {
   if (msg.content === '싸우자') {
     msg.channel.send('나?나 못이길텐데 ');
   }
-  if (msg.content === '바보') {
-    msg.channel.send('지금 나한테 바보라고 한거임? ㅡㅡ?');
-  }
-  if (msg.content === '안녕하세요') {
-    msg.channel.send('안녕하세요 반갑습니다!!!핑구에요!!!!!>W<');
-  }
-  if (msg.content === '헉') {
-    msg.channel.send('왜 왜왜오애ㅗ애왜왱 무슨일야??');
-  }
   if (msg.content === '핑구야') {
-    msg.channel.send('핑 바쁨 구인구직 해주느라 힘들어 죽겠네 하....프로그램인게 내 팔자지...');
+    msg.channel.send('핑 바쁨');
   }
   if (msg.content === '#일1,1') {
     msg.channel.send('@here  🌻 1인칭 1번방 1자리 채워주실분~🌻');
@@ -584,21 +564,6 @@ client.on('message', msg => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 });
 
-client.login('MTA1Nzk1MzU5OTQ4Njk1MTUwNA.GDOeEM.ZER-p08ya5ldT28utLtBUDlOrwlUGzZ8_mWnGc');
+  client.login('MTA1Nzk1MzU5OTQ4Njk1MTUwNA.GAz4gP.hRnWtpuaUCkil6AVig8UXYqkcr7WzhLuOQJeTY');
