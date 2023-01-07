@@ -315,13 +315,13 @@ client.on('message', msg => {
   //   msg.channel.send('@here  🌼   일반 10번방 3자리 채워주실분~🌼');
   // }
   if (msg.content === '!경1,1') {
-    msg.channel.send('@here  🔥   경쟁 1번방 1자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028394860077654117 ');
+    msg.channel.send('@here  🔥   경쟁 1번방 1자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028401145728729190 ');
   }
   if (msg.content === '!경1,2') {
-    msg.channel.send('@here  🔥   경쟁 1번방 2자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028394860077654117');
+    msg.channel.send('@here  🔥   경쟁 1번방 2자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028401145728729190');
   }
   if (msg.content === '!경1,3') {
-    msg.channel.send('@here  🔥   경쟁 1번방 3자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028394860077654117');
+    msg.channel.send('@here  🔥   경쟁 1번방 3자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028401145728729190');
   }
   if (msg.content === '!경2,1') {
     msg.channel.send('@here  🔥   경쟁 2번방 1자리 채워주실분~🔥\ https://discord.com/channels/618395850275553300/1028394688757108746 ');
@@ -342,13 +342,13 @@ client.on('message', msg => {
     msg.channel.send('@here  🔥   경쟁 3번방 3자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/878273629186564127');
   }
   if (msg.content === '!경4,1') {
-    msg.channel.send('@here  🔥   경쟁 4번방 1자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028401145728729190');
+    msg.channel.send('@here  🔥   경쟁 4번방 1자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028394860077654117 ');
   }
   if (msg.content === '!경4,2') {
-    msg.channel.send('@here  🔥   경쟁 4번방 2자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028401145728729190');
+    msg.channel.send('@here  🔥   경쟁 4번방 2자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028394860077654117');
   }
   if (msg.content === '!경4,3') {
-    msg.channel.send('@here  🔥   경쟁 4번방 3자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028401145728729190');
+    msg.channel.send('@here  🔥   경쟁 4번방 3자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/1028394860077654117');
   }
   if (msg.content === '!경5,1') {
     msg.channel.send('@here  🔥   경쟁 5번방 1자리 채워주실분~🔥 \ https://discord.com/channels/618395850275553300/862301298192154624');
