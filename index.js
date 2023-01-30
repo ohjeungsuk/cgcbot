@@ -336,140 +336,140 @@ client.on('message', msg => {
   //   msg.channel.send('@here  🌼   일반 10번방 3자리 채워주실분~🌼');
   // }
   if (msg.content === '!경1,1') {
-    msg.channel.send('@here  🔥   경쟁 1번방 1자리 채워주실분~🔥 \ https://discord.gg/VudnwCTH8m ');
+    msg.channel.send('@here  🔥   경쟁 1번방 1자리 채워주실분~🔥 \ https://discord.gg/ypbDEH5jJw ');
   }
   if (msg.content === '!경1,2') {
-    msg.channel.send('@here  🔥   경쟁 1번방 2자리 채워주실분~🔥 \ https://discord.gg/VudnwCTH8m');
+    msg.channel.send('@here  🔥   경쟁 1번방 2자리 채워주실분~🔥 \ https://discord.gg/ypbDEH5jJw');
   }
   if (msg.content === '!경1,3') {
-    msg.channel.send('@here  🔥   경쟁 1번방 3자리 채워주실분~🔥 \ https://discord.gg/VudnwCTH8m');
+    msg.channel.send('@here  🔥   경쟁 1번방 3자리 채워주실분~🔥 \ https://discord.gg/ypbDEH5jJw');
   }
   if (msg.content === '!경2,1') {
-    msg.channel.send('@here  🔥   경쟁 2번방 1자리 채워주실분~🔥\ https://discord.gg/PnzDDzZTRw ');
+    msg.channel.send('@here  🔥   경쟁 2번방 1자리 채워주실분~🔥\ https://discord.gg/pfRUmQve9g ');
   }
   if (msg.content === '!경2,2') {
-    msg.channel.send('@here  🔥   경쟁 2번방 2자리 채워주실분~🔥 \ https://discord.gg/PnzDDzZTRw');
+    msg.channel.send('@here  🔥   경쟁 2번방 2자리 채워주실분~🔥 \ https://discord.gg/pfRUmQve9g');
   }
   if (msg.content === '!경2,3') {
-    msg.channel.send('@here  🔥   경쟁 2번방 3자리 채워주실분~🔥 \ https://discord.gg/PnzDDzZTRw');
+    msg.channel.send('@here  🔥   경쟁 2번방 3자리 채워주실분~🔥 \ https://discord.gg/pfRUmQve9g');
   }
   if (msg.content === '!경3,1') {
-    msg.channel.send('@here  🔥   경쟁 3번방 1자리 채워주실분~🔥 \ https://discord.gg/mMnG4MHZnz');
+    msg.channel.send('@here  🔥   경쟁 3번방 1자리 채워주실분~🔥 \ https://discord.gg/JdaX394WeQ');
   }
   if (msg.content === '!경3,2') {
-    msg.channel.send('@here  🔥   경쟁 3번방 2자리 채워주실분~🔥 \ https://discord.gg/mMnG4MHZnz');
+    msg.channel.send('@here  🔥   경쟁 3번방 2자리 채워주실분~🔥 \ https://discord.gg/JdaX394WeQ');
   }
   if (msg.content === '!경3,3') {
-    msg.channel.send('@here  🔥   경쟁 3번방 3자리 채워주실분~🔥 \ https://discord.gg/mMnG4MHZnz');
+    msg.channel.send('@here  🔥   경쟁 3번방 3자리 채워주실분~🔥 \ https://discord.gg/JdaX394WeQ');
   }
   if (msg.content === '!경4,1') {
-    msg.channel.send('@here  🔥   경쟁 4번방 1자리 채워주실분~🔥 \ https://discord.gg/JSK2N3ehdZ');
+    msg.channel.send('@here  🔥   경쟁 4번방 1자리 채워주실분~🔥 \ https://discord.gg/xRECek4qep');
   }
   if (msg.content === '!경4,2') {
-    msg.channel.send('@here  🔥   경쟁 4번방 2자리 채워주실분~🔥 \ https://discord.gg/JSK2N3ehdZ');
+    msg.channel.send('@here  🔥   경쟁 4번방 2자리 채워주실분~🔥 \ https://discord.gg/xRECek4qep');
   }
   if (msg.content === '!경4,3') {
-    msg.channel.send('@here  🔥   경쟁 4번방 3자리 채워주실분~🔥 \ https://discord.gg/JSK2N3ehdZ');
+    msg.channel.send('@here  🔥   경쟁 4번방 3자리 채워주실분~🔥 \ https://discord.gg/xRECek4qep');
   }
   if (msg.content === '!경5,1') {
-    msg.channel.send('@here  🔥   경쟁 5번방 1자리 채워주실분~🔥 \ https://discord.gg/9g4Ygew76D');
+    msg.channel.send('@here  🔥   경쟁 5번방 1자리 채워주실분~🔥 \ https://discord.gg/YsXhnUE558');
   }
   if (msg.content === '!경5,2') {
-    msg.channel.send('@here  🔥   경쟁 5번방 2자리 채워주실분~🔥 \ https://discord.gg/9g4Ygew76D');
+    msg.channel.send('@here  🔥   경쟁 5번방 2자리 채워주실분~🔥 \ https://discord.gg/YsXhnUE558');
   }
   if (msg.content === '!경5,3') {
-    msg.channel.send('@here  🔥   경쟁 5번방 3자리 채워주실분~🔥 \ https://discord.gg/9g4Ygew76D');
+    msg.channel.send('@here  🔥   경쟁 5번방 3자리 채워주실분~🔥 \ https://discord.gg/YsXhnUE558');
   }
   if (msg.content === '!경6,1') {
-    msg.channel.send('@here  🔥   경쟁 6번방 1자리 채워주실분~🔥 \ https://discord.gg/BjWjyHb9RM');
+    msg.channel.send('@here  🔥   경쟁 6번방 1자리 채워주실분~🔥 \ https://discord.gg/84vQDXtnWk');
   }
   if (msg.content === '!경6,2') {
-    msg.channel.send('@here  🔥   경쟁 6번방 2자리 채워주실분~🔥 \ https://discord.gg/BjWjyHb9RM');
+    msg.channel.send('@here  🔥   경쟁 6번방 2자리 채워주실분~🔥 \ https://discord.gg/84vQDXtnWk');
   }
   if (msg.content === '!경6,3') {
-    msg.channel.send('@here  🔥   경쟁 6번방 3자리 채워주실분~🔥 \ https://discord.gg/BjWjyHb9RM');
+    msg.channel.send('@here  🔥   경쟁 6번방 3자리 채워주실분~🔥 \ https://discord.gg/84vQDXtnWk');
   }
   if (msg.content === '!경7,1') {
-    msg.channel.send('@here  🔥   경쟁 7번방 1자리 채워주실분~🔥 \ https://discord.gg/ypbDEH5jJw');
+    msg.channel.send('@here  🔥   경쟁 7번방 1자리 채워주실분~🔥 \ https://discord.gg/PnzDDzZTRw');
   }
   if (msg.content === '!경7,2') {
-    msg.channel.send('@here  🔥   경쟁 7번방 2자리 채워주실분~🔥 \ https://discord.gg/ypbDEH5jJw');
+    msg.channel.send('@here  🔥   경쟁 7번방 2자리 채워주실분~🔥 \ https://discord.gg/PnzDDzZTRw');
   }
   if (msg.content === '!경7,3') {
-    msg.channel.send('@here  🔥   경쟁 7번방 3자리 채워주실분~🔥 \ https://discord.gg/ypbDEH5jJw');
+    msg.channel.send('@here  🔥   경쟁 7번방 3자리 채워주실분~🔥 \ https://discord.gg/PnzDDzZTRw');
   }
   if (msg.content === '!경8,1') {
-    msg.channel.send('@here  🔥   경쟁 8번방 1자리 채워주실분~🔥 \ https://discord.gg/pfRUmQve9g ');
+    msg.channel.send('@here  🔥   경쟁 8번방 1자리 채워주실분~🔥 \ https://discord.gg/VudnwCTH8m ');
   }
   if (msg.content === '!경8,2') {
-    msg.channel.send('@here  🔥   경쟁 8번방 2자리 채워주실분~🔥 \ https://discord.gg/pfRUmQve9g');
+    msg.channel.send('@here  🔥   경쟁 8번방 2자리 채워주실분~🔥 \ https://discord.gg/VudnwCTH8m');
   }
   if (msg.content === '!경8,3') {
-    msg.channel.send('@here  🔥   경쟁 8번방 3자리 채워주실분~🔥 \ https://discord.gg/pfRUmQve9g');
+    msg.channel.send('@here  🔥   경쟁 8번방 3자리 채워주실분~🔥 \ https://discord.gg/VudnwCTH8m');
   }
   if (msg.content === '!경9,1') {
-    msg.channel.send('@here  🔥   경쟁 9번방 1자리 채워주실분~🔥 \ https://discord.gg/JdaX394WeQ');
+    msg.channel.send('@here  🔥   경쟁 9번방 1자리 채워주실분~🔥 \ https://discord.gg/mMnG4MHZnz');
   }
   if (msg.content === '!경9,2') {
-    msg.channel.send('@here  🔥   경쟁 9번방 2자리 채워주실분~🔥 \ https://discord.gg/JdaX394WeQ');
+    msg.channel.send('@here  🔥   경쟁 9번방 2자리 채워주실분~🔥 \ https://discord.gg/mMnG4MHZnz');
   }
   if (msg.content === '!경9,3') {
-    msg.channel.send('@here  🔥   경쟁 9번방 3자리 채워주실분~🔥 \ https://discord.gg/JdaX394WeQ');
+    msg.channel.send('@here  🔥   경쟁 9번방 3자리 채워주실분~🔥 \ https://discord.gg/mMnG4MHZnz');
   }
-  // if (msg.content === '!경10,1') {
-  //   msg.channel.send('@here  🔥   경쟁 10번방 1자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경10,2') {
-  //   msg.channel.send('@here  🔥   경쟁 10번방 2자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경10,3') {
-  //   msg.channel.send('@here  🔥   경쟁 10번방 3자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경11,1') {
-  //   msg.channel.send('@here  🔥   경쟁 11번방 1자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경11,2') {
-  //   msg.channel.send('@here  🔥   경쟁 11번방 2자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경11,3') {
-  //   msg.channel.send('@here  🔥   경쟁 11번방 3자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경12,1') {
-  //   msg.channel.send('@here  🔥   경쟁 12번방 1자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경12,2') {
-  //   msg.channel.send('@here  🔥   경쟁 12번방 2자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경12,3') {
-  //   msg.channel.send('@here  🔥   경쟁 12번방 3자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경13,1') {
-  //   msg.channel.send('@here  🔥   경쟁 13번방 1자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경13,2') {
-  //   msg.channel.send('@here  🔥   경쟁 13번방 2자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경13,3') {
-  //   msg.channel.send('@here  🔥   경쟁 13번방 3자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경14,1') {
-  //   msg.channel.send('@here  🔥   경쟁 14번방 1자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경14,2') {
-  //   msg.channel.send('@here  🔥   경쟁 14번방 2자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경14,3') {
-  //   msg.channel.send('@here  🔥   경쟁 14번방 3자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경15,1') {
-  //   msg.channel.send('@here  🔥   경쟁 15번방 1자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경15,2') {
-  //   msg.channel.send('@here  🔥   경쟁 15번방 2자리 채워주실분~🔥');
-  // }
-  // if (msg.content === '!경15,3') {
-  //   msg.channel.send('@here  🔥   경쟁 15번방 3자리 채워주실분~🔥');
-  // }
+  if (msg.content === '!경10,1') {
+    msg.channel.send('@here  🔥   경쟁 10번방 1자리 채워주실분~🔥 \ https://discord.gg/JSK2N3ehdZ');
+  }
+  if (msg.content === '!경10,2') {
+    msg.channel.send('@here  🔥   경쟁 10번방 2자리 채워주실분~🔥 \ https://discord.gg/JSK2N3ehdZ');
+  }
+  if (msg.content === '!경10,3') {
+    msg.channel.send('@here  🔥   경쟁 10번방 3자리 채워주실분~🔥 \ https://discord.gg/JSK2N3ehdZ');
+  }
+  if (msg.content === '!경11,1') {
+    msg.channel.send('@here  🔥   경쟁 11번방 1자리 채워주실분~🔥 \ https://discord.gg/9g4Ygew76D');
+  }
+  if (msg.content === '!경11,2') {
+    msg.channel.send('@here  🔥   경쟁 11번방 2자리 채워주실분~🔥 \ https://discord.gg/9g4Ygew76D');
+  }
+  if (msg.content === '!경11,3') {
+    msg.channel.send('@here  🔥   경쟁 11번방 3자리 채워주실분~🔥 \ https://discord.gg/9g4Ygew76D');
+  }
+  if (msg.content === '!경12,1') {
+    msg.channel.send('@here  🔥   경쟁 12번방 1자리 채워주실분~🔥 \ https://discord.gg/BjWjyHb9RM');
+  }
+  if (msg.content === '!경12,2') {
+    msg.channel.send('@here  🔥   경쟁 12번방 2자리 채워주실분~🔥 \ https://discord.gg/BjWjyHb9RM');
+  }
+  if (msg.content === '!경12,3') {
+    msg.channel.send('@here  🔥   경쟁 12번방 3자리 채워주실분~🔥 \ https://discord.gg/BjWjyHb9RM');
+  }
+  if (msg.content === '!경13,1') {
+    msg.channel.send('@here  🔥   경쟁 13번방 1자리 채워주실분~🔥 \ https://discord.gg/qyrmQEuDrw');
+  }
+  if (msg.content === '!경13,2') {
+    msg.channel.send('@here  🔥   경쟁 13번방 2자리 채워주실분~🔥 \ https://discord.gg/qyrmQEuDrw');
+  }
+  if (msg.content === '!경13,3') {
+    msg.channel.send('@here  🔥   경쟁 13번방 3자리 채워주실분~🔥 \ https://discord.gg/qyrmQEuDrw');
+  }
+  if (msg.content === '!경14,1') {
+    msg.channel.send('@here  🔥   경쟁 14번방 1자리 채워주실분~🔥 \ https://discord.gg/EcZrRn6Pdz');
+  }
+  if (msg.content === '!경14,2') {
+    msg.channel.send('@here  🔥   경쟁 14번방 2자리 채워주실분~🔥 \ https://discord.gg/EcZrRn6Pdz');
+  }
+  if (msg.content === '!경14,3') {
+    msg.channel.send('@here  🔥   경쟁 14번방 3자리 채워주실분~🔥 \ https://discord.gg/EcZrRn6Pdz');
+  }
+  if (msg.content === '!경15,1') {
+    msg.channel.send('@here  🔥   경쟁 15번방 1자리 채워주실분~🔥 \ https://discord.gg/XeZNRfVhnP');
+  }
+  if (msg.content === '!경15,2') {
+    msg.channel.send('@here  🔥   경쟁 15번방 2자리 채워주실분~🔥 \ https://discord.gg/XeZNRfVhnP');
+  }
+  if (msg.content === '!경15,3') {
+    msg.channel.send('@here  🔥   경쟁 15번방 3자리 채워주실분~🔥 \ https://discord.gg/XeZNRfVhnP');
+  }
   //라이브
   if (msg.content === '!라일1,1') {
     msg.channel.send('@here   🎬   라이브 일반 1번방 1자리 채워주실분~🎬 \ https://discord.gg/X6fUDeb3H9');
