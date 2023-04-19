@@ -33,7 +33,7 @@ client.on('message', async message => {
     const remainingMembers = maxMembers - currentMembers;
 
     // 응답 메시지 생성 및 전송
-    const inviteMessage = `@everyone ${voiceChannelName} 에서    ${remainingMembers} 자리  채워주실분 구합니다!!\n초대 링크: ${invite.url}`;
+    const inviteMessage = `@here ${voiceChannelName} 에서    ${remainingMembers} 자리  채워주실분 구합니다!!\n초대 링크: ${invite.url}`;
     message.channel.send(inviteMessage);
   }
 
