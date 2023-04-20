@@ -4,6 +4,7 @@ const prefix = '!';
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  client.user.setActivity('!핑구봇명령어', { type: 'LISTENING' });
 });
 
 client.on('message', async message => {
