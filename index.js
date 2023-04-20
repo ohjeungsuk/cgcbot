@@ -19,7 +19,7 @@ if (command === '팀') {
   const voiceChannel = message.member.voice.channel;
   if (!voiceChannel) return message.reply('음성 채널에 들어가 주세요.');
 
-  const members = voiceChannel.members.array().filter(member => !member.user.bot);
+  const members = voiceChannel.members.array().filter(member => !member.user.bot && !member.voice.mute);
   if (members.length < n) return message.reply('음성 채널에 인원이 부족합니다.');
 
   const shuffledMembers = members.sort(() => Math.random() - 0.5); // 인원을 무작위로 섞음
@@ -54,6 +54,10 @@ if (command === '팀') {
   message.channel.send(teamEmbed);
   message.channel.send(`@here ${randomMessage}`);
 }
+
+
+
+ 
     if (message.content === '!초대링크') {
       // 메시지를 보낸 채널이 음성 채널인지 확인
       if (!message.member.voice.channel) {
