@@ -31,7 +31,7 @@ if (command === '팀') {
 
   let index = 0;
   shuffledMembers.forEach(member => {
-    teams[index].push(member.user.username);
+    teams[index].push(member.displayName);
     index = (index + 1) % teams.length;
   });
 
