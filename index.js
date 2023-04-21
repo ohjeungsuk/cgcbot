@@ -177,6 +177,19 @@ if (command === '팀') {
       message.reply(` - ${amount}원 | 소지금 : ${money[message.author.id]}원입니다.`);
     }
   }
+   if (message.content === `${prefix}사채`) {
+    let gambleList = '';
+  
+    // 도박을 한 유저들의 리스트를 만든다
+    for (let userId in money) {
+      if (money[userId] < 1000) {
+        gambleList += `${client.users.cache.get(userId).username}: ${money[userId]}원\n`;
+      }
+    }
+  
+    // 도박을 한 유저들의 리스트와 자신의 소지금을 출력한다
+    message.reply(`도박을 한 유저들의 리스트:\n${gambleList}`);
+  }
 
   // 소지금 조회 명령어 처리
   if (message.content === `${prefix}소지금`) {
