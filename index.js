@@ -156,7 +156,7 @@ if (command === '팀') {
   // 대출 명령어 처리
   if (message.content === `${prefix}핑구대출좀`) {
     // 소지금이 0원인 경우에만 대출 가능
-    if (money[message.author.id] < 1) {
+    if (money[message.author.id] < 0) {
       money[message.author.id] += 500; // 대출금 500원 추가
       message.reply(`핑구님의 돈 500원을 빌려 받았습니다. 이제 소지금은 ${money[message.author.id]}원입니다.`);
     } else {
@@ -166,12 +166,9 @@ if (command === '팀') {
 
   // 도박 명령어 처리
   if (message.content === `${prefix}핑카`) {
-    
-  if (money[message.author.id] >= 1) {
     const gambleResult = Math.random() < 0.5 ? 'win' : 'lose'; // 50% 확률로 승리 또는 패배
-  }
 
-  if (gambleResult === 'win') {
+    if (gambleResult === 'win') {
       const amount = Math.floor(Math.random() * 500) + 1; // 1~500원 중 랜덤으로 얻은 금액
       money[message.author.id] += amount; // 소지금 추가
       message.reply(` + ${amount}원 | 소지금 : ${money[message.author.id]}원입니다.`);
@@ -180,10 +177,9 @@ if (command === '팀') {
       money[message.author.id] -= amount; // 소지금 차감
       message.reply(` - ${amount}원 | 소지금 : ${money[message.author.id]}원입니다.`);
     }
-  } else {
-     message.reply('죄송하지만, 현재 돈이 없어 도박을 할 수 없습니다.');
   }
-    
+  
+
   // 소지금 조회 명령어 처리
   if (message.content === `${prefix}소지금`) {
     message.reply(`현재 소지금은 ${money[message.author.id]}원입니다.`);
