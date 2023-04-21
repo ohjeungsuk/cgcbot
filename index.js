@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const prefix = '!';
 
+let gambleList = '';
 let money = {};
 
 client.on('ready', () => {
@@ -178,7 +179,7 @@ if (command === '팀') {
     }
   }
    if (message.content === `${prefix}사채`) {
-    let gambleList = '';
+    
   
     // 도박을 한 유저들의 리스트를 만든다
     for (let userId in money) {
