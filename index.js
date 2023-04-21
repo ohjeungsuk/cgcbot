@@ -167,10 +167,11 @@ if (command === '팀') {
   // 도박 명령어 처리
   if (message.content === `${prefix}핑카`) {
     
-    if (money[message.author.id] >= 1) {
+  if (money[message.author.id] >= 1) {
     const gambleResult = Math.random() < 0.5 ? 'win' : 'lose'; // 50% 확률로 승리 또는 패배
+  }
 
-    if (gambleResult === 'win') {
+  if (gambleResult === 'win') {
       const amount = Math.floor(Math.random() * 500) + 1; // 1~500원 중 랜덤으로 얻은 금액
       money[message.author.id] += amount; // 소지금 추가
       message.reply(` + ${amount}원 | 소지금 : ${money[message.author.id]}원입니다.`);
