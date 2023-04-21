@@ -164,7 +164,7 @@ if (command === '팀') {
   }
 
   // 도박 명령어 처리
-  if (message.content === `${prefix}도박`) {
+  if (message.content === `${prefix}핑박`) {
     const gambleResult = Math.random() < 0.5 ? 'win' : 'lose'; // 50% 확률로 승리 또는 패배
 
     if (gambleResult === 'win') {
