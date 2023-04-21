@@ -179,22 +179,6 @@ if (command === '팀') {
     }
   }
   
-  if (message.content === `${prefix}사채`) {
-  let gambleList = "";  // 도박을 한 유저들의 리스트를 담을 변수
-  let printedUsers = []; // 출력한 유저의 아이디를 저장할 배열
-  
-  // 도박을 한 유저들의 리스트를 만든다
-  for (let userId in money) {
-    if (money[userId] < 1000 && !printedUsers.includes(userId)) {
-      printedUsers.push(userId);
-      gambleList += `${client.users.cache.get(userId).username}: ${money[userId]}원\n`;
-    }
-  }
-
-  // 도박을 한 유저들의 리스트와 자신의 소지금을 출력한다
-  message.reply(`도박을 한 유저들의 리스트:\n${gambleList}`);
-}
- 
 
   // 소지금 조회 명령어 처리
   if (message.content === `${prefix}소지금`) {
