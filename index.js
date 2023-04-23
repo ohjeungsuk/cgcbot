@@ -1,8 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const prefix = '!';
-const fs = require('fs');
-const dataFilePath = './data.json';
 
 
 let money = {};
@@ -147,53 +145,6 @@ if (command === '팀') {
     if (message.content === '하') {
       message.channel.send('히흐헹호오오옹');
     }
-  
-  if (message.content === '테스트도박') {
-    const userId = message.author.id;
-    const data = loadData();
-
-    // Check if user has data in the file
-    if (!data[userId]) {
-      data[userId] = { balance: 1000 };
-    }
-
-    // Flip a coin to determine whether to add or subtract 500 from balance
-    const isWin = Math.random() >= 0.5;
-    data[userId].balance += isWin ? 500 : -500;
-
-    saveData(data);
-    message.reply(`도박 결과: ${isWin ? '승리' : '패배'}! 현재 소지금: ${data[userId].balance}`);
-  }
-
-  // Handle !소지금 command
-  if (message.content === '테스트소지금') {
-    const userId = message.author.id;
-    const data = loadData();
-
-    // Check if user has data in the file
-    if (!data[userId]) {
-      data[userId] = { balance: 1000 };
-    }
-
-    message.reply(`현재 소지금: ${data[userId].balance}`);
-  }
-});
-
-function loadData() {
-  // Load data from file
-  try {
-    const data = fs.readFileSync(dataFilePath);
-    return JSON.parse(data);
-  } catch (err) {
-    console.error(err);
-    return {};
-  }
-}
-
-function saveData(data) {
-  // Save data to file
-  fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
-}
   });
 
   client.login('MTA1Nzk1MzU5OTQ4Njk1MTUwNA.GAz4gP.hRnWtpuaUCkil6AVig8UXYqkcr7WzhLuOQJeTY');
