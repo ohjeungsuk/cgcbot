@@ -104,34 +104,61 @@ if (command === '팀') {
       message.channel.send('ex)"!초대링크" 입력시 구인구직 초대링크 생성 \n "!팀 N" N명 입력시 음성채널에 있는 인원을 N명만큼 팀 생성');
     }
 
-    if (command === '도박') {
+    const user = message.author;
+
+    if (command === '핑카') {
+      
       const userId = message.author.id;
       const data = loadData();
   
       // Check if user has data in the file
       if (!data[userId]) {
-        data[userId] = { balance: 1000 };
+        data[userId] = { balance: 10000 };
       }
   
       // Flip a coin to determine whether to add or subtract 500 from balance
-      const isWin = Math.random() >= 0.5;
-      data[userId].balance += isWin ? 500 : -500;
+      const isWin = Math.random() >= 0.4;
+      const amount = isWin ? Math.floor(Math.random() * 1000) : Math.floor(Math.random() * -1100);
+      data[userId].balance += amount;
   
       saveData(data);
-      message.reply(`도박 결과: ${isWin ? '승리' : '패배'}! 현재 소지금: ${data[userId].balance}`);
+      const result = isWin ? `${user} 님 의 승리! ${amount}원을 획득하였습니다. 현재 소지금: ${data[userId].balance}` : `${user} 패배ㅠㅠㅠㅠ ${-amount}원을 잃었습니다. 현재 소지금: ${data[userId].balance}`;
+      message.channel.send(result);
+     
     }
   
     // Handle 소지금 command
     if (command === '소지금') {
+      
       const userId = message.author.id;
       const data = loadData();
   
       // Check if user has data in the file
       if (!data[userId]) {
-        data[userId] = { balance: 1000 };
+        data[userId] = { balance: 10000 };
       }
   
-      message.reply(`현재 소지금: ${data[userId].balance}`);
+      message.reply(`님의 현재 소지금: ${data[userId].balance}`);
+    }
+
+    if (command === '핑구님대출이요') {
+        
+        const userId = message.author.id;
+        const data = loadData();
+      
+        // Check if user has data in the file
+        if (!data[userId]) {
+          data[userId] = { balance: 10000 };
+        }
+      
+        // Check if user's balance is 0 or negative
+        if (data[userId].balance <= 0) {
+          data[userId].balance += 5000;
+          saveData(data);
+          message.reply(`님, 5000원 대출이 완료되었습니다. 현재 소지금: ${data[userId].balance}`);
+        } else {
+          message.reply(`님, 소지금이 0원 이하일 경우에만 대출 가능합니다.`);
+        }
     }
   });
   
