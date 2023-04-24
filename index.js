@@ -101,7 +101,7 @@ if (command === '팀') {
     }
 
     if (message.content === '!핑구봇명령어') {  // 명령어 사용법
-      message.channel.send('ex)"!초대링크" 입력시 구인구직 초대링크 생성 \n "!팀 N" N명 입력시 음성채널에 있는 인원을 N명만큼 팀 생성');
+      message.channel.send('ex)"!초대링크" 입력시 구인구직 초대링크 생성 \n "!팀 N" N명 입력시 음성채널에 있는 인원을 N명만큼 팀 생성 \n !핑카 입력시 도박시작  기본소지금 10000원 \n !소지금 입력시 현재 금액 출력 ');
     }
 
     const user = message.author;
