@@ -122,7 +122,7 @@ if (command === '팀') {
       data[userId].balance += amount;
   
       saveData(data);
-      const result = isWin ? `${user} 님 의 승리! ${amount}원을 획득하였습니다. 현재 소지금: ${data[userId].balance}` : `${user} 패배ㅠㅠㅠㅠ ${-amount}원을 잃었습니다. 현재 소지금: ${data[userId].balance}`;
+      const result = isWin ? ` + ${amount}원 | 소지금 : ${money[message.author.id]}원입니다.` : `- ${amount}원 | 소지금 : ${money[message.author.id]}원입니다.`;
       message.channel.send(result);
      
     }
