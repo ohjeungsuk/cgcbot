@@ -138,7 +138,7 @@ if (command === '팀') {
         data[userId] = { balance: 10000 };
       }
   
-      message.reply(`님의 현재 소지금: ${data[userId].balance}`);
+      message.reply(`님의 현재 소지금: ${data[userId].balance}원`);
     }
 
     if (command === '핑구님대출이요') {
