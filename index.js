@@ -1,12 +1,6 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const fs = require('fs');
 const prefix = '!';
-
-const dataFilePath = './data.json';
-
-
-let money = {};
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -101,81 +95,53 @@ if (command === '팀') {
     }
 
     if (message.content === '!핑구봇명령어') {  // 명령어 사용법
-      message.channel.send('ex)"!초대링크" 입력시 구인구직 초대링크 생성 \n "!팀 N" N명 입력시 음성채널에 있는 인원을 N명만큼 팀 생성 \n !핑카 입력시 도박시작  기본소지금 10000원 \n !소지금 입력시 현재 금액 출력 ');
+      message.channel.send('ex)"!초대링크" 입력시 구인구직 초대링크 생성 \n "!팀 N" N명 입력시 음성채널에 있는 인원을 N명만큼 팀 생성');
     }
-
-    const user = message.author;
-
-    if (command === '핑카') {
-      
-      const userId = message.author.id;
-      const data = loadData();
-  
-      // Check if user has data in the file
-      if (!data[userId]) {
-        data[userId] = { balance: 10000 };
-      }
-  
-      // Flip a coin to determine whether to add or subtract 500 from balance
-      const isWin = Math.random() >= 0.4;
-      const amount = isWin ? Math.floor(Math.random() * 1000) : Math.floor(Math.random() * -1100);
-      data[userId].balance += amount;
-  
-      saveData(data);
-      const result = isWin ? `${user} +${amount}원 ㅣ 소지금: ${data[userId].balance}원` : `${user} -${-amount}원ㅣ 소지금: ${data[userId].balance}원`;
-      message.channel.send(result);
-     
+    if (message.content === '핑구') {  //대화
+      message.channel.send('아 왜 바빠죽겠는데 나지금 24시간 돌아가는거 안보임 ???? ㅡㅡ');
     }
-  
-    // Handle 소지금 command
-    if (command === '소지금') {
-      
-      const userId = message.author.id;
-      const data = loadData();
-  
-      // Check if user has data in the file
-      if (!data[userId]) {
-        data[userId] = { balance: 10000 };
-      }
-  
-      message.reply(`님의 현재 소지금: ${data[userId].balance}원`);
+    if (message.content === '안녕') {  //대화
+      message.channel.send('안녕!!!하이 하우알유 땡큐!!!');
     }
-
-    if (command === '핑구님대출이요') {
-        
-        const userId = message.author.id;
-        const data = loadData();
-      
-        // Check if user has data in the file
-        if (!data[userId]) {
-          data[userId] = { balance: 10000 };
-        }
-      
-        // Check if user's balance is 0 or negative
-        if (data[userId].balance <= 0) {
-          data[userId].balance += 5000;
-          saveData(data);
-          message.reply(`님, 5000원 대출이 완료되었습니다. 현재 소지금: ${data[userId].balance}`);
-        } else {
-          message.reply(`님, 소지금이 0원 이하일 경우에만 대출 가능합니다.`);
-        }
+    if (message.content === '핑구바보') {
+      message.channel.send('핑이님 한테 바보라니...그거 우리끼리 비밀이란 말이에요....');
+    }
+    if (message.content === '!끝말잇기') {
+      message.channel.send('해질녘 ㅋ ');
+    }
+    if (message.content === '누구없소') {
+      message.channel.send('핑구있소');
+    }
+    if (message.content === '응애') {
+      message.channel.send('응애 나 애기 핑구');
+    }
+    if (message.content === '룰루') {
+      message.channel.send('난나!!!');
+    }
+    if (message.content === '잘자요') {
+      message.channel.send('두루가~~~~~~!!!');
+    }
+    if (message.content === '굿모닝') {
+      message.channel.send('핑구는 잠을 안잔다 나약한 닝겐들 ㅋ');
+    }
+    if (message.content === '사랑해') {
+      message.channel.send('미안...난 임자가 있어....');
+    }
+    if (message.content === '싸우자') {
+      message.channel.send('나?나 못이길텐데 ㅋ');
+    }
+    if (message.content === '핑구야') {
+      message.channel.send('핑 바쁨');
+    }
+    if (message.content === '기달') {
+      message.channel.send('기달리는 동안 핑구랑 끝말잇기 ? !끝말잇기 쳐봐 시작함ㅇㅇ');
+    }
+    if (message.content === 'ㅅㅂ') {
+      message.channel.send('ㅅㅂ???????????????마 자신 있나? @here');
+    }
+    if (message.content === '하') {
+      message.channel.send('히흐헹호오오옹');
     }
   });
-  
-  function loadData() {
-    // Load data from file
-    try {
-      const data = fs.readFileSync(dataFilePath);
-      return JSON.parse(data);
-    } catch (err) {
-      console.error(err);
-      return {};
-    }
-  }
-  
-  function saveData(data) {
-    // Save data to file
-    fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
-  };
 
   client.login('MTA1Nzk1MzU5OTQ4Njk1MTUwNA.GAz4gP.hRnWtpuaUCkil6AVig8UXYqkcr7WzhLuOQJeTY');
