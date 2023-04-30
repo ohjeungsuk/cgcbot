@@ -66,7 +66,7 @@ client.on('message', async message => {
     message.channel.send(teamEmbed);
     message.channel.send(`@here ${randomMessage}`);
   }
-});
+}
 
 
   
