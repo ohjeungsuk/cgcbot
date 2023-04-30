@@ -7,6 +7,7 @@ client.on('ready', () => {
   client.user.setActivity('!핑구봇명령어', { type: 'LISTENING' });
 });
 
+
 client.on('message', async message => {
   if (!message.content.startsWith(prefix) || message.author.bot) return;
 
@@ -23,24 +24,21 @@ client.on('message', async message => {
     const members = voiceChannel.members.array().filter(member => !member.user.bot && !member.voice.mute);
     if (members.length < n) return message.reply('음성 채널에 인원이 부족합니다.');
 
-    const teamSize = Math.floor(members.length / n);
-    const remainder = members.length % n;
+    let teamSize = Math.floor(members.length / n);
+    let leftOver = members.length % n;
 
     const shuffledMembers = members.sort(() => Math.random() - 0.5); // 인원을 무작위로 섞음
     const teams = [];
-
-    for (let i = 0; i < n - remainder; i++) {
-      teams.push([]);
-      for (let j = 0; j < teamSize; j++) {
-        const member = shuffledMembers.shift();
-        teams[i].push(member.displayName);
+    for (let i = 0; i < n; i++) {
+      let team = [];
+      if (leftOver > 0) {
+        teamSize = Math.ceil(members.length / n);
+        leftOver--;
       }
-    }
-
-    for (let i = n - remainder; i < n; i++) {
-      teams.push([]);
-      const member = shuffledMembers.shift();
-      teams[i].push(member.displayName);
+      for (let j = 0; j < teamSize; j++) {
+        team.push(shuffledMembers.shift().displayName);
+      }
+      teams.push(team);
     }
 
     const selectedTeamIndex = Math.floor(Math.random() * n);
@@ -70,5 +68,8 @@ client.on('message', async message => {
     message.channel.send(`@here ${randomMessage}`);
   }
 });
+
+
+
 
 client.login('MTA1Nzk1MzU5OTQ4Njk1MTUwNA.GAz4gP.hRnWtpuaUCkil6AVig8UXYqkcr7WzhLuOQJeTY');
