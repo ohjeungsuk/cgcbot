@@ -12,8 +12,8 @@ client.on('message', async message => {
 
 const args = message.content.slice(prefix.length).trim().split(/ +/);
 const command = args.shift().toLowerCase();
-  
-  if (command === '팀') {
+
+if (command === '팀') {
   const n = parseInt(args[0]);
   if (isNaN(n) || n < 1) return message.reply('올바른 인원 수를 입력해주세요.');
 
@@ -25,10 +25,7 @@ const command = args.shift().toLowerCase();
 
   const shuffledMembers = members.sort(() => Math.random() - 0.5); // 인원을 무작위로 섞음
   const teams = [];
-
-  // 이전 코드에서는 Math.ceil(members.length / n)으로 팀 개수를 구했지만
-  // 이번에는 남은 인원도 한 팀을 이룰 수 있도록 Math.ceil(members.length / n) + 1로 수정합니다.
-  for (let i = 0; i < Math.ceil(members.length / n) + 1; i++) {
+  for (let i = 0; i < Math.ceil(members.length / n); i++) {
     teams.push([]);
   }
 
@@ -51,17 +48,17 @@ const command = args.shift().toLowerCase();
     .setTimestamp()
     .setImage(message.guild.iconURL());
 
-  // 이전 코드에서는 teams.forEach((team, i) => { teamEmbed.addField(`Team ${i + 1}`, team.join(',')); });
-  // 로 각 팀마다 필드를 생성했지만, 이번에는 나머지 한 명을 위한 팀을 추가로 생성하고 필드를 생성합니다.
-  teams.slice(0, -1).forEach((team, i) => {
+  teams.forEach((team, i) => {
     teamEmbed.addField(`Team ${i + 1}`, team.join(','));
   });
-  teamEmbed.addField(`Team ${teams.length}`, teams[teams.length - 1].join(',')); // 나머지 한 명을 위한 팀의 필드를 생성합니다.
 
   message.channel.send(teamEmbed);
   message.channel.send(`@here ${randomMessage}`);
 }
 
+
+
+ 
     if (message.content === '!초대링크') {
       // 메시지를 보낸 채널이 음성 채널인지 확인
       if (!message.member.voice.channel) {
