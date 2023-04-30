@@ -27,16 +27,16 @@ const command = args.shift().toLowerCase();
   const teams = [];
 
   const numOfTeam = Math.ceil(members.length / n);
-  const numOfMemberInATeam = Math.floor(members.length / numOfTeam);
-  let remainingMembers = members.length % numOfTeam;
+  const numOfLargerTeam = members.length % numOfTeam;
 
+  let startIndex = 0;
   for (let i = 0; i < numOfTeam; i++) {
-    let teamSize = numOfMemberInATeam;
-    if (remainingMembers > 0) {
+    let teamSize = n;
+    if (i < numOfLargerTeam) {
       teamSize++;
-      remainingMembers--;
     }
-    teams.push(shuffledMembers.splice(0, teamSize).map(member => member.displayName));
+    teams.push(shuffledMembers.slice(startIndex, startIndex + teamSize).map(member => member.displayName));
+    startIndex += teamSize;
   }
 
   const selectedTeamIndex = Math.floor(Math.random() * teams.length);
@@ -61,10 +61,9 @@ const command = args.shift().toLowerCase();
 }
 
   
- 
+  
 
-
-
+  
 
  
     if (message.content === '!초대링크') {
