@@ -12,8 +12,8 @@ client.on('message', async message => {
 
 const args = message.content.slice(prefix.length).trim().split(/ +/);
 const command = args.shift().toLowerCase();
-
-if (command === '팀') {
+  
+  if (command === '팀') {
   const n = parseInt(args[0]);
   if (isNaN(n) || n < 1) return message.reply('올바른 인원 수를 입력해주세요.');
 
@@ -62,7 +62,6 @@ if (command === '팀') {
   message.channel.send(`@here ${randomMessage}`);
 }
 
- 
     if (message.content === '!초대링크') {
       // 메시지를 보낸 채널이 음성 채널인지 확인
       if (!message.member.voice.channel) {
