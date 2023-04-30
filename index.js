@@ -66,15 +66,7 @@ client.on('message', async message => {
     message.channel.send(teamEmbed);
     message.channel.send(`@here ${randomMessage}`);
   }
-}
 
-
-  
-  
-
-  
-
- 
     if (message.content === '!초대링크') {
       // 메시지를 보낸 채널이 음성 채널인지 확인
       if (!message.member.voice.channel) {
