@@ -12,8 +12,8 @@ client.on('message', async message => {
 
 const args = message.content.slice(prefix.length).trim().split(/ +/);
 const command = args.shift().toLowerCase();
-
-if (command === '팀') {
+  
+  if (command === '팀') {
   const n = parseInt(args[0]);
   if (isNaN(n) || n < 1) return message.reply('올바른 인원 수를 입력해주세요.');
 
@@ -21,19 +21,19 @@ if (command === '팀') {
   if (!voiceChannel) return message.reply('음성 채널에 들어가 주세요.');
 
   const members = voiceChannel.members.array().filter(member => !member.user.bot && !member.voice.mute);
-  if (members.length < n) return message.reply('음성 채널에 인원이 부족합니다.');
-
-  const shuffledMembers = members.sort(() => Math.random() - 0.5); // 인원을 무작위로 섞음
+  const numOfTeams = Math.ceil(members.length / n);
+  const numOfMembersInLastTeam = members.length % n;
+  
   const teams = [];
-  for (let i = 0; i < Math.ceil(members.length / n); i++) {
-    teams.push([]);
+  let startIndex = 0;
+  for (let i = 0; i < numOfTeams; i++) {
+    const endIndex = startIndex + (i === numOfTeams - 1 ? numOfMembersInLastTeam : n);
+    const team = members.slice(startIndex, endIndex).map(member => member.displayName);
+    if (team.length > 0) {
+      teams.push(team);
+    }
+    startIndex = endIndex;
   }
-
-  let index = 0;
-  shuffledMembers.forEach(member => {
-    teams[index].push(member.displayName);
-    index = (index + 1) % teams.length;
-  });
 
   const selectedTeamIndex = Math.floor(Math.random() * teams.length);
   const selectedTeamName = `${selectedTeamIndex + 1} 팀`;
@@ -55,6 +55,8 @@ if (command === '팀') {
   message.channel.send(teamEmbed);
   message.channel.send(`@here ${randomMessage}`);
 }
+
+
 
 
 
