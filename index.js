@@ -13,7 +13,7 @@ client.on('message', async message => {
 const args = message.content.slice(prefix.length).trim().split(/ +/);
 const command = args.shift().toLowerCase();
   
- if (command === '팀') {
+  if (command === '팀') {
   const n = parseInt(args[0]);
   if (isNaN(n) || n < 1) return message.reply('올바른 인원 수를 입력해주세요.');
 
@@ -26,21 +26,24 @@ const command = args.shift().toLowerCase();
   const shuffledMembers = members.sort(() => Math.random() - 0.5); // 인원을 무작위로 섞음
   const teams = [];
 
-  const numTeams = Math.ceil(members.length / n);
-  const numExtraMembers = members.length % n;
+  const numOfTeam = Math.ceil(members.length / n);
+  const numOfMemberInATeam = Math.floor(members.length / numOfTeam);
+  let remainingMembers = members.length % numOfTeam;
 
-  let startIndex = 0;
-  let endIndex = 0;
-  for (let i = 0; i < numTeams; i++) {
-    const currentNumMembers = i < numExtraMembers ? n : n - 1;
-    endIndex += currentNumMembers;
-    teams.push(shuffledMembers.slice(startIndex, endIndex));
-    startIndex = endIndex;
+  for (let i = 0; i < numOfTeam; i++) {
+    let teamSize = numOfMemberInATeam;
+    if (remainingMembers > 0) {
+      teamSize++;
+      remainingMembers--;
+    }
+    teams.push(shuffledMembers.splice(0, teamSize).map(member => member.displayName));
   }
 
+  const selectedTeamIndex = Math.floor(Math.random() * teams.length);
+  const selectedTeamName = `${selectedTeamIndex + 1} 팀`;
   const colors = ['#FF5733', '#C70039', '#900C3F', '#581845', '#2E86C1', '#2ECC71', '#F1C40F', '#8E44AD'];
   const selectedColor = colors[Math.floor(Math.random() * colors.length)];
-  const randomMessage = `${n}명이 한 팀을 이루며 ${members.length % n}명이 혼자 팀을 하게 됩니다.`;
+  const randomMessage = `${selectedTeamName}에 핑구는 배팅한다 생선 ${Math.floor(Math.random() * 71) + 30}개!!!!!!! 쫄리면 포기 하시던지ㅋㅋ`;
   const teamEmbed = new Discord.MessageEmbed()
     .setTitle(`새로운 팀이 구성되었습니다!`)
     .setDescription('나와 함께 할 팀은????')
@@ -50,14 +53,15 @@ const command = args.shift().toLowerCase();
     .setImage(message.guild.iconURL());
 
   teams.forEach((team, i) => {
-    teamEmbed.addField(`Team ${i + 1}`, team.map(member => member.displayName).join(', '));
+    teamEmbed.addField(`Team ${i + 1}`, team.join(','));
   });
 
   message.channel.send(teamEmbed);
   message.channel.send(`@here ${randomMessage}`);
 }
 
-
+  
+ 
 
 
 
