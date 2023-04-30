@@ -26,25 +26,21 @@ const command = args.shift().toLowerCase();
   const shuffledMembers = members.sort(() => Math.random() - 0.5); // 인원을 무작위로 섞음
   const teams = [];
 
-  const numOfTeam = Math.ceil(members.length / n);
-  const numOfMemberInATeam = Math.floor(members.length / numOfTeam);
+  const numTeams = Math.ceil(members.length / n);
+  const numExtraMembers = members.length % n;
 
-  let numOfLargerTeam = members.length % numOfTeam;
-
-  for (let i = 0; i < numOfTeam; i++) {
-    let teamSize = numOfMemberInATeam;
-    if (numOfLargerTeam > 0) {
-      teamSize++;
-      numOfLargerTeam--;
-    }
-    teams.push(shuffledMembers.splice(0, teamSize).map(member => member.displayName));
+  let startIndex = 0;
+  let endIndex = 0;
+  for (let i = 0; i < numTeams; i++) {
+    const currentNumMembers = i < numExtraMembers ? n : n - 1;
+    endIndex += currentNumMembers;
+    teams.push(shuffledMembers.slice(startIndex, endIndex));
+    startIndex = endIndex;
   }
 
-  const selectedTeamIndex = Math.floor(Math.random() * teams.length);
-  const selectedTeamName = `${selectedTeamIndex + 1} 팀`;
   const colors = ['#FF5733', '#C70039', '#900C3F', '#581845', '#2E86C1', '#2ECC71', '#F1C40F', '#8E44AD'];
   const selectedColor = colors[Math.floor(Math.random() * colors.length)];
-  const randomMessage = `${selectedTeamName}에 핑구는 배팅한다 생선 ${Math.floor(Math.random() * 71) + 30}개!!!!!!! 쫄리면 포기 하시던지ㅋㅋ`;
+  const randomMessage = `${n}명이 한 팀을 이루며 ${members.length % n}명이 혼자 팀을 하게 됩니다.`;
   const teamEmbed = new Discord.MessageEmbed()
     .setTitle(`새로운 팀이 구성되었습니다!`)
     .setDescription('나와 함께 할 팀은????')
@@ -54,7 +50,7 @@ const command = args.shift().toLowerCase();
     .setImage(message.guild.iconURL());
 
   teams.forEach((team, i) => {
-    teamEmbed.addField(`Team ${i + 1}`, team.join(','));
+    teamEmbed.addField(`Team ${i + 1}`, team.map(member => member.displayName).join(', '));
   });
 
   message.channel.send(teamEmbed);
