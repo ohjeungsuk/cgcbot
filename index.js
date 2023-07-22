@@ -63,6 +63,8 @@ const command = args.shift().toLowerCase();
 
  
     if (message.content === '!초대링크') {
+      const maxMembers = 4;
+      
       // 메시지를 보낸 채널이 음성 채널인지 확인
       if (!message.member.voice.channel) {
         return message.reply('먼저 음성 채널에 들어가주세요!');
@@ -70,17 +72,19 @@ const command = args.shift().toLowerCase();
     
       // 음성 채널의 초대 링크 생성
       const invite = await message.member.voice.channel.createInvite({
-        maxAge: 3600, // 초 단위. 1시간 후에 만료됨
+      maxAge: 3600, // 초 단위. 1시간 후에 만료됨
       });
     
       // 음성 채널의 이름과 카테고리 정보 가져오기
       const voiceChannelName = message.member.voice.channel.name;
       const voiceChannelCategoryName = message.member.voice.channel.parent ? message.member.voice.channel.parent.name : '';
     
-      // 음성 채널의 최대 참가 가능 인원 수와 현재 접속중인 유저 수 계산
-      const maxMembers = message.member.voice.channel.userLimit;
+     // 음성 채널의 현재 참가 인원 수
       const currentMembers = message.member.voice.channel.members.size;
-      const remainingMembers = maxMembers - currentMembers;
+
+    // 실제로 초대 가능한 구인 구직 인원 수 계산
+      const remainingMembers = Math.max(maxMembers - currentMembers, 0);
+
 
       const colors = ['#FF5733', '#C70039', '#900C3F', '#581845', '#2E86C1', '#2ECC71', '#F1C40F', '#8E44AD'];
       const selectedColor = colors[Math.floor(Math.random() * colors.length)];
@@ -92,10 +96,10 @@ const command = args.shift().toLowerCase();
         .setFooter('해당링크는 1시간후 자동으로 소모 됩니다.')
         .setTimestamp();
 
-        //출력하는 칸
-      message.channel.send('@here',inviteMessage);
+    // 출력하는 칸
+      message.channel.send('@here', inviteMessage);
       message.channel.send(invite.url);
-    }
+  }
 
     if (message.content === '!핑구봇명령어') {  // 명령어 사용법
       message.channel.send('ex)"!초대링크" 입력시 구인구직 초대링크 생성 \n "!팀 N" N명 입력시 음성채널에 있는 인원을 N명만큼 팀 생성');
