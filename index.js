@@ -53,7 +53,7 @@ const command = args.shift().toLowerCase();
   });
 
   message.channel.send(teamEmbed);
-  message.channel.send(`@here ${randomMessage}`);
+  message.channel.send(` ${randomMessage}`);
 }
 
 
@@ -97,7 +97,7 @@ const command = args.shift().toLowerCase();
         .setTimestamp();
 
     // 출력하는 칸
-      message.channel.send('@here', inviteMessage);
+      message.channel.send(inviteMessage);
       message.channel.send(invite.url);
   }
 
