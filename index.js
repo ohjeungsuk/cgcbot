@@ -82,27 +82,10 @@ client.on('message', async message => {
 
   if (message.content === '!핑구봇도움말') {
     message.channel.send(
-      `**구인구직 사용방법!**\n음성채널 입장 후 \`\`!구인구직\`\` 또는 \`\` 입력하면 자동으로 초대링크 생성\n\n` +
+      `**구인구직 사용방법!**\n음성채널 입장 후 \`\`!구인구직\`\` 입력하면 자동으로 초대링크 생성\n\n` +
       `**팀 짜기 사용방법!**\n음성채널 입장 후 \`\`!팀 N\`\` (N=원하는 명수) 입력 시 음성채널에 있는 인원을 N명만큼 팀 나눠짐\n[마이크 끄기 되어있는 인원은 미포함]`
     );
   }
-
-  // 기타 대화 응답은 동일
-  if (message.content === '핑구') message.channel.send('아 왜 바빠죽겠는데 나지금 24시간 돌아가는거 안보임 ???? ㅡㅡ');
-  if (message.content === '안녕') message.channel.send('안녕!!!하이 하우알유 땡큐!!!');
-  if (message.content === '핑구바보') message.channel.send('핑이님 한테 바보라니...그거 우리끼리 비밀이란 말이에요....');
-  if (message.content === '!끝말잇기') message.channel.send('해질녘 ㅋ ');
-  if (message.content === '누구없소') message.channel.send('핑구있소');
-  if (message.content === '응애') message.channel.send('응애 나 애기 핑구');
-  if (message.content === '룰루') message.channel.send('난나!!!');
-  if (message.content === '잘자요') message.channel.send('두루가~~~~~~!!!');
-  if (message.content === '굿모닝') message.channel.send('핑구는 잠을 안잔다 나약한 닝겐들 ㅋ');
-  if (message.content === '사랑해') message.channel.send('미안...난 임자가 있어....');
-  if (message.content === '싸우자') message.channel.send('나?나 못이길텐데 ㅋ');
-  if (message.content === '핑구야') message.channel.send('핑 바쁨');
-  if (message.content === '기달') message.channel.send('기달리는 동안 핑구랑 끝말잇기 ? !끝말잇기 쳐봐 시작함ㅇㅇ');
-  if (message.content === 'ㅅㅂ') message.channel.send('ㅅㅂ???????????????마 자신 있나? @here');
-  if (message.content === '하') message.channel.send('히흐헹호오오옹');
 });
 
 client.login('MTA1Nzk1MzU5OTQ4Njk1MTUwNA.GAz4gP.hRnWtpuaUCkil6AVig8UXYqkcr7WzhLuOQJeTY');
