@@ -2,6 +2,8 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const prefix = '!';
 
+let latestTeams = []; // !팀 명령으로 구성된 최신 팀 정보를 저장
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setActivity('!핑구봇사용법', { type: 'LISTENING' });
@@ -35,6 +37,8 @@ client.on('message', async message => {
       restMembers -= teamSize;
     }
 
+    latestTeams = teams; // !시작 명령어용으로 저장
+
     const selectedTeamIndex = Math.floor(Math.random() * teams.length);
     const selectedTeamName = `${selectedTeamIndex + 1} 팀`;
     const randomMessage = `${selectedTeamName}에 핑구는 배팅한다 생선 ${Math.floor(Math.random() * 71) + 30}개!!!!!!! 쫄리면 포기 하시던지ㅋㅋ`;
@@ -53,6 +57,38 @@ client.on('message', async message => {
     message.channel.send(randomMessage);
   }
 
+  // !시작 명령어 - 팀원 강제 이동
+  if (command === '시작') {
+    if (latestTeams.length === 0) {
+      return message.reply('먼저 !팀 명령어로 팀을 구성해주세요.');
+    }
+
+    const voiceChannelIds = [
+      '835845662758797312', '835845625957711893', '835845808212541442',
+      '835845743842951168', '835845775740502096', '937670883944857620',
+      '835845837749092372', '835845874323161088', '835845904018833409',
+      '835845943394959441', '835846052648845343', '835846092242419742',
+      '835846122789404702', '835846217425747968', '835846265634947073'
+    ];
+
+    latestTeams.forEach((team, i) => {
+      const channelId = voiceChannelIds[i];
+      const channel = message.guild.channels.cache.get(channelId);
+      if (!channel || channel.type !== 'voice') return;
+
+      team.forEach(name => {
+        const member = message.guild.members.cache.find(m => m.displayName === name);
+        if (member && member.voice.channel) {
+          member.voice.setChannel(channel).catch(err => {
+            console.error(`이동 실패: ${member.displayName}`, err.message);
+          });
+        }
+      });
+    });
+
+    message.channel.send('모든 인원을 팀별 채널로 이동시켰습니다!');
+  }
+
   // !구인구직 또는 !모여라 명령어
   if (command === '구인구직' || command === '모여라') {
     const maxMembers = 4;
@@ -62,7 +98,7 @@ client.on('message', async message => {
     }
 
     const invite = await message.member.voice.channel.createInvite({
-      maxAge: 3600, // 1시간
+      maxAge: 3600,
     });
 
     const voiceChannelName = message.member.voice.channel.name;
