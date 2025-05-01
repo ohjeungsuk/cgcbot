@@ -58,7 +58,7 @@ client.on('message', async message => {
   }
 
   // !시작 명령어 - 팀원 강제 이동
-  if (command === '시작') {
+  if (command === '출동') {
     if (latestTeams.length === 0) {
       return message.reply('먼저 !팀 명령어로 팀을 구성해주세요.');
     }
