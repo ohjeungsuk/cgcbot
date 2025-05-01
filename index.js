@@ -6,7 +6,7 @@ let latestTeams = []; // !팀 명령으로 구성된 최신 팀 정보를 저장
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity('!핑구봇사용법', { type: 'LISTENING' });
+  //client.user.setActivity('!핑구봇사용법', { type: 'LISTENING' });
 });
 
 client.on('message', async message => {
