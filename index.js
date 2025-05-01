@@ -4,7 +4,7 @@ const prefix = '!';
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity('!핑구봇명령어', { type: 'LISTENING' });
+  client.user.setActivity('!핑구봇사용법', { type: 'LISTENING' });
 });
 
 client.on('message', async message => {
@@ -80,9 +80,9 @@ client.on('message', async message => {
     message.channel.send(invite.url);
   }
 
-  if (message.content === '!핑구봇명령어') {
+  if (message.content === '!핑구봇도움말') {
     message.channel.send(
-      `**구인구직 사용방법!**\n음성채널 입장 후 \`\`!구인구직\`\` 또는 \`\`!모여라\`\` 입력하면 자동으로 초대링크 생성\n\n` +
+      `**구인구직 사용방법!**\n음성채널 입장 후 \`\`!구인구직\`\` 또는 \`\` 입력하면 자동으로 초대링크 생성\n\n` +
       `**팀 짜기 사용방법!**\n음성채널 입장 후 \`\`!팀 N\`\` (N=원하는 명수) 입력 시 음성채널에 있는 인원을 N명만큼 팀 나눠짐\n[마이크 끄기 되어있는 인원은 미포함]`
     );
   }
