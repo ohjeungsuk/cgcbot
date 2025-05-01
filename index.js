@@ -42,20 +42,18 @@ client.on('message', async message => {
     let teamMessage = `**새로운 팀이 구성되었습니다!**\n나와 함께 할 팀은???\n\n`;
 
     teams.forEach((team, i) => {
-      const maxLen = Math.max(...team.map(name => name.length));
-      teamMessage += `╭────────── Team ${i + 1} ──────────╮\n`;
+      teamMessage += `\`\`\`\nTeam ${i + 1}\n`;
       team.forEach(name => {
-        const padded = name.padEnd(maxLen, ' ');
-        teamMessage += `┃ ${padded} ┃\n`;
+        teamMessage += `${name}\n`;
       });
-      teamMessage += `╰────────────────────────────╯\n\n`;
+      teamMessage += `\`\`\`\n`;
     });
 
     message.channel.send(teamMessage);
     message.channel.send(randomMessage);
   }
 
-  // !구인구직, !모여라
+  // !구인구직 또는 !모여라 명령어
   if (command === '구인구직' || command === '모여라') {
     const maxMembers = 4;
 
@@ -64,7 +62,7 @@ client.on('message', async message => {
     }
 
     const invite = await message.member.voice.channel.createInvite({
-      maxAge: 3600,
+      maxAge: 3600, // 1시간
     });
 
     const voiceChannelName = message.member.voice.channel.name;
@@ -84,7 +82,7 @@ client.on('message', async message => {
     message.channel.send(invite.url);
   }
 
-  // !핑구봇사용법
+  // !핑구봇사용법 명령어
   if (message.content === '!핑구봇사용법') {
     message.channel.send(
       `**구인구직 사용방법!**\n음성채널 입장 후 \`\`!구인구직\`\` 입력하면 자동으로 초대링크 생성\n\n` +
@@ -92,5 +90,4 @@ client.on('message', async message => {
     );
   }
 });
-
 client.login('MTA1Nzk1MzU5OTQ4Njk1MTUwNA.GAz4gP.hRnWtpuaUCkil6AVig8UXYqkcr7WzhLuOQJeTY');
