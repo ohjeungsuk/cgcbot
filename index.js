@@ -7,6 +7,8 @@ const {
 const PREFIX = '!';
 const MAX_RECRUIT_MEMBERS = 4;
 const INVITE_MAX_AGE_SECONDS = 60 * 60;
+const OUTING_ROLE_NAME = '외출';
+const BOT_MANAGER_USER_IDS = new Set(['393017142087516160']);
 const TEAM_CHANNEL_IDS = [
   '835845662758797312', '835845625957711893', '835845808212541442',
   '835845743842951168', '835845775740502096', '937670883944857620',
@@ -49,6 +51,36 @@ function buildTeamButtons(sessionId, state = 'ready') {
       .setEmoji('🏠').setStyle(ButtonStyle.Secondary)
       .setDisabled(!isDispatched || isCompleted),
   );
+}
+
+function buildOutingPanel() {
+  const embed = new EmbedBuilder()
+    .setColor(0x5865f2)
+    .setTitle('🐧 외출 · 복귀 상태 관리')
+    .setDescription(
+      '자리를 비울 때는 **외출** 버튼을 눌러 주세요.\n' +
+      '다시 돌아오면 **복귀** 버튼을 누르면 됩니다.',
+    )
+    .addFields(
+      { name: '🚶 외출', value: '`외출` 역할을 부여합니다.', inline: true },
+      { name: '🏠 복귀', value: '`외출` 역할을 제거합니다.', inline: true },
+    )
+    .setFooter({ text: '기존 역할은 변경되지 않으며 외출 역할만 추가하거나 제거합니다.' });
+
+  const buttons = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('outing:leave')
+      .setLabel('외출')
+      .setEmoji('🚶')
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId('outing:return')
+      .setLabel('복귀')
+      .setEmoji('🏠')
+      .setStyle(ButtonStyle.Success),
+  );
+
+  return { embeds: [embed], components: [buttons] };
 }
 
 function buildTeamEmbed(teams, teamSize) {
@@ -94,6 +126,7 @@ function buildHelpEmbed() {
       { name: '🎲 `!팀 인원수`', value: '현재 음성 채널 인원을 무작위로 섞어 팀을 만들어요.\n예시: `!팀 2`' },
       { name: '🚀 팀 출동 / 🏠 해산·복귀', value: '팀 편성 메시지 아래 버튼으로 이동하고, 끝난 뒤 원래 음성 채널로 돌아와요.\n`!출동` 명령어도 계속 사용할 수 있어요.' },
       { name: '📣 `!구인구직` 또는 `!모여라`', value: '현재 음성 채널의 1시간짜리 초대장을 예쁘게 만들어 모집해요.' },
+      { name: '🚶 외출 · 복귀', value: '서버의 외출 관리 채널에서 버튼을 눌러 상태를 변경할 수 있어요.' },
       { name: '💡 이용 팁', value: '먼저 음성 채널에 입장해 주세요. 마이크를 끈 인원과 봇은 팀 편성에서 제외돼요.' },
     )
     .setFooter({ text: '핑구봇과 즐거운 게임 되세요!' })
@@ -116,9 +149,31 @@ function buildRecruitEmbed(message, voiceChannel, currentMembers, remainingMembe
     .setTimestamp();
 }
 
+function isBotManager(userId, memberPermissions) {
+  return BOT_MANAGER_USER_IDS.has(userId) ||
+    memberPermissions?.has(PermissionFlagsBits.Administrator);
+}
+
 function canControlSession(userId, memberPermissions, session) {
   return userId === session.ownerId || session.memberIds.has(userId) ||
+    isBotManager(userId, memberPermissions) ||
     memberPermissions?.has(PermissionFlagsBits.MoveMembers);
+}
+
+function findOutingRole(guild) {
+  return guild.roles.cache.find((role) => role.name === OUTING_ROLE_NAME && !role.managed) ?? null;
+}
+
+function getOutingRoleError(guild, role) {
+  const botMember = guild.members.me;
+  if (!role) return '`외출` 역할을 찾을 수 없어요. 역할을 먼저 만들어 주세요.';
+  if (!botMember?.permissions.has(PermissionFlagsBits.ManageRoles)) {
+    return '핑구봇에게 **역할 관리** 권한이 필요합니다.';
+  }
+  if (botMember.roles.highest.comparePositionTo(role) <= 0) {
+    return '서버 역할 설정에서 **핑구봇 역할을 외출 역할보다 위로** 올려 주세요.';
+  }
+  return null;
 }
 
 function summarizeMoveResults(results) {
@@ -289,6 +344,45 @@ async function handleLegacyDispatchCommand(message) {
   }
 }
 
+async function handleOutingPanelCommand(message) {
+  if (!isBotManager(message.author.id, message.member.permissions)) {
+    await message.reply('이 명령어는 서버 관리자만 사용할 수 있어요.');
+    return;
+  }
+
+  const role = findOutingRole(message.guild);
+  const roleError = getOutingRoleError(message.guild, role);
+  if (roleError) {
+    await message.reply(roleError);
+    return;
+  }
+
+  const pinned = await message.channel.messages.fetchPins();
+  const existingPanel = pinned.items
+    .map((item) => item.message)
+    .find((pinnedMessage) =>
+      pinnedMessage.author.id === message.client.user.id &&
+      pinnedMessage.components.some((row) =>
+        row.components.some((component) => component.customId === 'outing:leave'),
+      ),
+    );
+
+  if (existingPanel) {
+    await existingPanel.edit(buildOutingPanel());
+    await message.reply(`이미 이 채널에 외출 패널이 등록되어 있어요: ${existingPanel.url}`);
+    return;
+  }
+
+  const panelMessage = await message.channel.send(buildOutingPanel());
+  try {
+    await panelMessage.pin('핑구봇 외출·복귀 패널 등록');
+    await message.reply(`외출·복귀 패널을 만들고 고정했어요: ${panelMessage.url}`);
+  } catch (error) {
+    console.warn('외출 패널 고정 실패:', error.message);
+    await message.reply(`패널은 만들었지만 고정하지 못했어요. 관리자가 직접 고정해 주세요: ${panelMessage.url}`);
+  }
+}
+
 async function handleMessage(message) {
   if (!message.guild || message.author.bot || !message.content.startsWith(PREFIX)) return;
   const args = message.content.slice(PREFIX.length).trim().split(/\s+/);
@@ -297,6 +391,7 @@ async function handleMessage(message) {
     if (command === '팀') await handleTeamCommand(message, args);
     else if (command === '출동') await handleLegacyDispatchCommand(message);
     else if (command === '구인구직' || command === '모여라') await handleRecruitCommand(message);
+    else if (command === '외출') await handleOutingPanelCommand(message);
     else if (command === '핑구봇명령어' || command === '핑구봇사용법') {
       await message.channel.send({ embeds: [buildHelpEmbed()] });
     }
@@ -306,8 +401,38 @@ async function handleMessage(message) {
   }
 }
 
-async function handleButton(interaction) {
-  if (!interaction.isButton() || !interaction.customId.startsWith('team:')) return;
+async function handleOutingButton(interaction) {
+  const role = findOutingRole(interaction.guild);
+  const roleError = getOutingRoleError(interaction.guild, role);
+  if (roleError) {
+    await interaction.reply({ content: roleError, flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const action = interaction.customId.split(':')[1];
+  const member = interaction.member;
+  const hasOutingRole = member.roles.cache.has(role.id);
+
+  if (action === 'leave' && hasOutingRole) {
+    await interaction.reply({ content: '이미 외출 상태예요. 조심히 다녀오세요! 🐧', flags: MessageFlags.Ephemeral });
+    return;
+  }
+  if (action === 'return' && !hasOutingRole) {
+    await interaction.reply({ content: '이미 복귀 상태예요. 어서 오세요! 🐧', flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  if (action === 'leave') {
+    await member.roles.add(role, '핑구봇 외출 버튼 사용');
+    await interaction.editReply('🚶 외출 상태로 변경했어요. 조심히 다녀오세요!');
+  } else if (action === 'return') {
+    await member.roles.remove(role, '핑구봇 복귀 버튼 사용');
+    await interaction.editReply('🏠 복귀 완료! 다시 오신 것을 환영해요.');
+  }
+}
+
+async function handleTeamButton(interaction) {
   const [, action, sessionId] = interaction.customId.split(':');
   const session = teamSessions.get(interaction.guildId);
   if (!session || session.id !== sessionId) {
@@ -357,6 +482,27 @@ async function handleButton(interaction) {
   }
 }
 
+async function handleButton(interaction) {
+  if (!interaction.isButton()) return;
+
+  try {
+    if (interaction.customId.startsWith('outing:')) {
+      await handleOutingButton(interaction);
+    } else if (interaction.customId.startsWith('team:')) {
+      await handleTeamButton(interaction);
+    }
+  } catch (error) {
+    console.error(`버튼 처리 실패 (${interaction.customId}):`, error);
+    const response = {
+      content: '버튼을 처리하는 중 문제가 생겼어요. 봇 권한과 역할 순서를 확인해 주세요.',
+      flags: MessageFlags.Ephemeral,
+    };
+    if (interaction.deferred) await interaction.editReply(response.content).catch(() => {});
+    else if (interaction.replied) await interaction.followUp(response).catch(() => {});
+    else await interaction.reply(response).catch(() => {});
+  }
+}
+
 function createClient() {
   const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
@@ -386,8 +532,10 @@ if (require.main === module) {
 module.exports = {
   buildHelpEmbed,
   buildMentionContent,
+  buildOutingPanel,
   buildTeamButtons,
   buildTeamEmbed,
+  isBotManager,
   shuffleMembers,
   splitIntoTeams,
 };

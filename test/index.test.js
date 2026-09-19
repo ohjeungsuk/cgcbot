@@ -3,8 +3,10 @@ const assert = require('node:assert/strict');
 const {
   buildHelpEmbed,
   buildMentionContent,
+  buildOutingPanel,
   buildTeamButtons,
   buildTeamEmbed,
+  isBotManager,
   shuffleMembers,
   splitIntoTeams,
 } = require('../index');
@@ -16,6 +18,12 @@ test('shuffleMembers preserves members without mutating the input', () => {
   assert.deepEqual(members.map((member) => member.id), originalOrder);
   assert.deepEqual(shuffled.map((member) => member.id).sort(), originalOrder);
   assert.notDeepEqual(shuffled.map((member) => member.id), originalOrder);
+});
+
+test('configured bot manager receives the administrator override', () => {
+  const noDiscordPermissions = { has: () => false };
+  assert.equal(isBotManager('393017142087516160', noDiscordPermissions), true);
+  assert.equal(isBotManager('111111111111111111', noDiscordPermissions), false);
 });
 
 test('splitIntoTeams respects the requested maximum team size', () => {
@@ -37,11 +45,16 @@ test('team and help UI components serialize for Discord API v14', () => {
   const teams = [[{ id: '100' }, { id: '200' }], [{ id: '300' }]];
   const teamEmbed = buildTeamEmbed(teams, 2).toJSON();
   const helpEmbed = buildHelpEmbed().toJSON();
+  const outingPanel = buildOutingPanel();
+  const outingButtons = outingPanel.components[0].toJSON();
   const readyButtons = buildTeamButtons('session').toJSON();
   const dispatchedButtons = buildTeamButtons('session', 'dispatched').toJSON();
 
   assert.equal(teamEmbed.fields.length, 3);
-  assert.equal(helpEmbed.fields.length, 4);
+  assert.equal(helpEmbed.fields.length, 5);
+  assert.equal(outingPanel.embeds[0].toJSON().title, '🐧 외출 · 복귀 상태 관리');
+  assert.equal(outingButtons.components[0].custom_id, 'outing:leave');
+  assert.equal(outingButtons.components[1].custom_id, 'outing:return');
   assert.equal(readyButtons.components[0].disabled, false);
   assert.equal(readyButtons.components[1].disabled, true);
   assert.equal(dispatchedButtons.components[0].disabled, true);
