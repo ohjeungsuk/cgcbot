@@ -8,6 +8,7 @@ const PREFIX = '!';
 const MAX_RECRUIT_MEMBERS = 4;
 const INVITE_MAX_AGE_SECONDS = 60 * 60;
 const OUTING_ROLE_NAME = '외출';
+const OUTING_LOG_MARKER = '핑구봇 외출 로그 채널';
 const BOT_MANAGER_USER_IDS = new Set(['393017142087516160']);
 const TEAM_CHANNEL_IDS = [
   '835845662758797312', '835845625957711893', '835845808212541442',
@@ -18,6 +19,7 @@ const TEAM_CHANNEL_IDS = [
 ];
 
 const teamSessions = new Map();
+const outingLogChannelIds = new Map();
 
 function shuffleMembers(members, randomInt = crypto.randomInt) {
   const shuffled = [...members];
@@ -83,6 +85,38 @@ function buildOutingPanel() {
   return { embeds: [embed], components: [buttons] };
 }
 
+function buildOutingLogRegistrationEmbed() {
+  return new EmbedBuilder()
+    .setColor(0x5865f2)
+    .setTitle('📋 외출 로그 채널 등록 완료')
+    .setDescription('이 채널에 핑구봇의 **외출·복귀 기록**이 자동으로 저장됩니다.')
+    .addFields(
+      { name: '기록 항목', value: '사용자 · 상태 · 처리 시각' },
+      { name: '보관 방식', value: 'Discord 메시지로 보관되어 Heroku가 재시작되어도 유지됩니다.' },
+    )
+    .setFooter({ text: OUTING_LOG_MARKER })
+    .setTimestamp();
+}
+
+function buildOutingLogEntry({ userId, displayName, avatarUrl, action, timestamp = Date.now() }) {
+  const isLeaving = action === 'leave';
+  const unixTimestamp = Math.floor(timestamp / 1_000);
+  const embed = new EmbedBuilder()
+    .setColor(isLeaving ? 0xf59e0b : 0x22c55e)
+    .setTitle(isLeaving ? '🚶 외출 기록' : '🏠 복귀 기록')
+    .setDescription(isLeaving ? '외출 상태로 변경되었습니다.' : '외출을 마치고 복귀했습니다.')
+    .addFields(
+      { name: '사용자', value: `<@${userId}>\n${displayName}`, inline: true },
+      { name: '처리 시각', value: `<t:${unixTimestamp}:F>\n<t:${unixTimestamp}:R>`, inline: true },
+      { name: '사용자 ID', value: `\`${userId}\``, inline: false },
+    )
+    .setFooter({ text: '핑구봇 외출 관리 기록' })
+    .setTimestamp(timestamp);
+
+  if (avatarUrl) embed.setThumbnail(avatarUrl);
+  return embed;
+}
+
 function buildTeamEmbed(teams, teamSize) {
   const selectedTeamIndex = crypto.randomInt(teams.length);
   const fishCount = crypto.randomInt(30, 101);
@@ -126,7 +160,7 @@ function buildHelpEmbed() {
       { name: '🎲 `!팀 인원수`', value: '현재 음성 채널 인원을 무작위로 섞어 팀을 만들어요.\n예시: `!팀 2`' },
       { name: '🚀 팀 출동 / 🏠 해산·복귀', value: '팀 편성 메시지 아래 버튼으로 이동하고, 끝난 뒤 원래 음성 채널로 돌아와요.\n`!출동` 명령어도 계속 사용할 수 있어요.' },
       { name: '📣 `!구인구직` 또는 `!모여라`', value: '현재 음성 채널의 1시간짜리 초대장을 예쁘게 만들어 모집해요.' },
-      { name: '🚶 외출 · 복귀', value: '서버의 외출 관리 채널에서 버튼을 눌러 상태를 변경할 수 있어요.' },
+      { name: '🚶 외출 · 복귀', value: '외출 관리 채널에서 버튼으로 상태를 변경해요.\n관리자: `!외출`, `!외출로그`' },
       { name: '💡 이용 팁', value: '먼저 음성 채널에 입장해 주세요. 마이크를 끈 인원과 봇은 팀 편성에서 제외돼요.' },
     )
     .setFooter({ text: '핑구봇과 즐거운 게임 되세요!' })
@@ -174,6 +208,57 @@ function getOutingRoleError(guild, role) {
     return '서버 역할 설정에서 **핑구봇 역할을 외출 역할보다 위로** 올려 주세요.';
   }
   return null;
+}
+
+function isOutingLogMarker(message, botUserId) {
+  return message.author.id === botUserId &&
+    message.embeds.some((embed) => embed.footer?.text === OUTING_LOG_MARKER);
+}
+
+async function findOutingLogChannel(guild) {
+  const cachedChannelId = outingLogChannelIds.get(guild.id);
+  const cachedChannel = cachedChannelId ? guild.channels.cache.get(cachedChannelId) : null;
+  if (cachedChannel?.isTextBased()) return cachedChannel;
+
+  let newestRegistration = null;
+  const channels = [...guild.channels.cache.values()].filter((channel) =>
+    channel.type === ChannelType.GuildText || channel.type === ChannelType.GuildAnnouncement,
+  );
+
+  for (const channel of channels) {
+    try {
+      const pinned = await channel.messages.fetchPins();
+      for (const item of pinned.items) {
+        const pinnedMessage = item.message;
+        if (!isOutingLogMarker(pinnedMessage, guild.client.user.id)) continue;
+        const registeredAt = pinnedMessage.editedTimestamp ?? pinnedMessage.createdTimestamp;
+        if (!newestRegistration || registeredAt > newestRegistration.registeredAt) {
+          newestRegistration = { channel, registeredAt };
+        }
+      }
+    } catch {
+      // 봇이 볼 수 없거나 기록 조회 권한이 없는 채널은 건너뜁니다.
+    }
+  }
+
+  if (!newestRegistration) return null;
+  outingLogChannelIds.set(guild.id, newestRegistration.channel.id);
+  return newestRegistration.channel;
+}
+
+async function writeOutingLog(guild, member, action) {
+  const logChannel = await findOutingLogChannel(guild);
+  if (!logChannel) return false;
+
+  await logChannel.send({
+    embeds: [buildOutingLogEntry({
+      userId: member.id,
+      displayName: member.displayName,
+      avatarUrl: member.displayAvatarURL(),
+      action,
+    })],
+  });
+  return true;
 }
 
 function summarizeMoveResults(results) {
@@ -383,6 +468,35 @@ async function handleOutingPanelCommand(message) {
   }
 }
 
+async function handleOutingLogCommand(message) {
+  if (!isBotManager(message.author.id, message.member.permissions)) {
+    await message.reply('이 명령어는 서버 관리자만 사용할 수 있어요.');
+    return;
+  }
+
+  const pinned = await message.channel.messages.fetchPins();
+  const existingMarker = pinned.items
+    .map((item) => item.message)
+    .find((pinnedMessage) => isOutingLogMarker(pinnedMessage, message.client.user.id));
+
+  if (existingMarker) {
+    await existingMarker.edit({ embeds: [buildOutingLogRegistrationEmbed()] });
+    outingLogChannelIds.set(message.guild.id, message.channel.id);
+    await message.reply(`이미 이 채널이 외출 로그 채널로 등록되어 있어요: ${existingMarker.url}`);
+    return;
+  }
+
+  const markerMessage = await message.channel.send({ embeds: [buildOutingLogRegistrationEmbed()] });
+  outingLogChannelIds.set(message.guild.id, message.channel.id);
+  try {
+    await markerMessage.pin('핑구봇 외출 로그 채널 등록');
+    await message.reply(`이 채널을 외출 로그 채널로 등록하고 고정했어요: ${markerMessage.url}`);
+  } catch (error) {
+    console.warn('외출 로그 채널 표시 메시지 고정 실패:', error.message);
+    await message.reply(`로그 채널은 등록했지만 표시 메시지를 고정하지 못했어요. 직접 고정해 주세요: ${markerMessage.url}`);
+  }
+}
+
 async function handleMessage(message) {
   if (!message.guild || message.author.bot || !message.content.startsWith(PREFIX)) return;
   const args = message.content.slice(PREFIX.length).trim().split(/\s+/);
@@ -392,6 +506,7 @@ async function handleMessage(message) {
     else if (command === '출동') await handleLegacyDispatchCommand(message);
     else if (command === '구인구직' || command === '모여라') await handleRecruitCommand(message);
     else if (command === '외출') await handleOutingPanelCommand(message);
+    else if (command === '외출로그') await handleOutingLogCommand(message);
     else if (command === '핑구봇명령어' || command === '핑구봇사용법') {
       await message.channel.send({ embeds: [buildHelpEmbed()] });
     }
@@ -426,9 +541,15 @@ async function handleOutingButton(interaction) {
   if (action === 'leave') {
     await member.roles.add(role, '핑구봇 외출 버튼 사용');
     await interaction.editReply('🚶 외출 상태로 변경했어요. 조심히 다녀오세요!');
+    await writeOutingLog(interaction.guild, member, action).catch((error) =>
+      console.warn('외출 기록 저장 실패:', error.message),
+    );
   } else if (action === 'return') {
     await member.roles.remove(role, '핑구봇 복귀 버튼 사용');
     await interaction.editReply('🏠 복귀 완료! 다시 오신 것을 환영해요.');
+    await writeOutingLog(interaction.guild, member, action).catch((error) =>
+      console.warn('복귀 기록 저장 실패:', error.message),
+    );
   }
 }
 
@@ -532,6 +653,8 @@ if (require.main === module) {
 module.exports = {
   buildHelpEmbed,
   buildMentionContent,
+  buildOutingLogEntry,
+  buildOutingLogRegistrationEmbed,
   buildOutingPanel,
   buildTeamButtons,
   buildTeamEmbed,

@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 const {
   buildHelpEmbed,
   buildMentionContent,
+  buildOutingLogEntry,
+  buildOutingLogRegistrationEmbed,
   buildOutingPanel,
   buildTeamButtons,
   buildTeamEmbed,
@@ -24,6 +26,27 @@ test('configured bot manager receives the administrator override', () => {
   const noDiscordPermissions = { has: () => false };
   assert.equal(isBotManager('393017142087516160', noDiscordPermissions), true);
   assert.equal(isBotManager('111111111111111111', noDiscordPermissions), false);
+});
+
+test('outing log embeds serialize leave and return records', () => {
+  const registration = buildOutingLogRegistrationEmbed().toJSON();
+  const leave = buildOutingLogEntry({
+    userId: '393017142087516160',
+    displayName: '핑구',
+    action: 'leave',
+    timestamp: 1_700_000_000_000,
+  }).toJSON();
+  const returned = buildOutingLogEntry({
+    userId: '393017142087516160',
+    displayName: '핑구',
+    action: 'return',
+    timestamp: 1_700_000_000_000,
+  }).toJSON();
+
+  assert.equal(registration.footer.text, '핑구봇 외출 로그 채널');
+  assert.equal(leave.title, '🚶 외출 기록');
+  assert.equal(returned.title, '🏠 복귀 기록');
+  assert.match(leave.fields[0].value, /<@393017142087516160>/);
 });
 
 test('splitIntoTeams respects the requested maximum team size', () => {
