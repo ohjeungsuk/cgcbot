@@ -1,129 +1,393 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
-const prefix = '!';
+const crypto = require('node:crypto');
+const {
+  ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Client, EmbedBuilder,
+  Events, GatewayIntentBits, MessageFlags, PermissionFlagsBits,
+} = require('discord.js');
 
-let latestTeams = []; // !팀 명령으로 구성된 최신 팀 정보를 저장
+const PREFIX = '!';
+const MAX_RECRUIT_MEMBERS = 4;
+const INVITE_MAX_AGE_SECONDS = 60 * 60;
+const TEAM_CHANNEL_IDS = [
+  '835845662758797312', '835845625957711893', '835845808212541442',
+  '835845743842951168', '835845775740502096', '937670883944857620',
+  '835845837749092372', '835845874323161088', '835845904018833409',
+  '835845943394959441', '835846052648845343', '835846092242419742',
+  '835846122789404702', '835846217425747968', '835846265634947073',
+];
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  //client.user.setActivity('!핑구봇사용법', { type: 'LISTENING' });
-});
+const teamSessions = new Map();
 
-client.on('message', async message => {
-  if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-  const args = message.content.slice(prefix.length).trim().split(/ +/);
-  const command = args.shift().toLowerCase();
-
-  // !팀 명령어
-  if (command === '팀') {
-    const n = parseInt(args[0]);
-    if (isNaN(n) || n < 1) return message.reply('올바른 인원 수를 입력해주세요.');
-
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) return message.reply('음성 채널에 들어가 주세요.');
-
-    const members = voiceChannel.members.array().filter(member => !member.user.bot && !member.voice.mute);
-    if (members.length < n) return message.reply('음성 채널에 인원이 부족합니다.');
-
-    const shuffledMembers = members.sort(() => Math.random() - 0.5);
-    const teams = [];
-    let restMembers = shuffledMembers.length;
-
-    while (restMembers > 0) {
-      const teamSize = Math.min(restMembers, n);
-      const teamMembers = shuffledMembers.slice(teams.length * n, teams.length * n + teamSize);
-      teams.push(teamMembers.map(member => member.displayName));
-      restMembers -= teamSize;
-    }
-
-    latestTeams = teams; // !시작 명령어용으로 저장
-
-    const selectedTeamIndex = Math.floor(Math.random() * teams.length);
-    const selectedTeamName = `${selectedTeamIndex + 1} 팀`;
-    const randomMessage = `${selectedTeamName}에 핑구는 배팅한다 생선 ${Math.floor(Math.random() * 71) + 30}개!!!!!!! 쫄리면 포기 하시던지ㅋㅋ`;
-
-    let teamMessage = `**새로운 팀이 구성되었습니다!**\n나와 함께 할 팀은???\n\n`;
-
-    teams.forEach((team, i) => {
-      teamMessage += `\`\`\`\nTeam ${i + 1}\n`;
-      team.forEach(name => {
-        teamMessage += `${name}\n`;
-      });
-      teamMessage += `\`\`\`\n`;
-    });
-
-    message.channel.send(teamMessage);
-    message.channel.send(randomMessage);
+function shuffleMembers(members, randomInt = crypto.randomInt) {
+  const shuffled = [...members];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = randomInt(index + 1);
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
   }
+  return shuffled;
+}
 
-  // !시작 명령어 - 팀원 강제 이동
-  if (command === '출동') {
-    if (latestTeams.length === 0) {
-      return message.reply('먼저 !팀 명령어로 팀을 구성해주세요.');
-    }
+function splitIntoTeams(members, teamSize) {
+  const shuffled = shuffleMembers(members);
+  const teamCount = Math.ceil(shuffled.length / teamSize);
+  const teams = Array.from({ length: teamCount }, () => []);
+  shuffled.forEach((member, index) => teams[index % teamCount].push(member));
+  return teams;
+}
 
-    const voiceChannelIds = [
-      '835845662758797312', '835845625957711893', '835845808212541442',
-      '835845743842951168', '835845775740502096', '937670883944857620',
-      '835845837749092372', '835845874323161088', '835845904018833409',
-      '835845943394959441', '835846052648845343', '835846092242419742',
-      '835846122789404702', '835846217425747968', '835846265634947073'
-    ];
+function buildTeamButtons(sessionId, state = 'ready') {
+  const isDispatched = state === 'dispatched';
+  const isCompleted = state === 'completed';
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`team:dispatch:${sessionId}`)
+      .setLabel(isDispatched ? '출동 완료' : '팀별 채널로 출동')
+      .setEmoji('🚀').setStyle(ButtonStyle.Success)
+      .setDisabled(isDispatched || isCompleted),
+    new ButtonBuilder()
+      .setCustomId(`team:return:${sessionId}`)
+      .setLabel(isCompleted ? '복귀 완료' : '해산하고 원래 채널로 복귀')
+      .setEmoji('🏠').setStyle(ButtonStyle.Secondary)
+      .setDisabled(!isDispatched || isCompleted),
+  );
+}
 
-    latestTeams.forEach((team, i) => {
-      const channelId = voiceChannelIds[i];
-      const channel = message.guild.channels.cache.get(channelId);
-      if (!channel || channel.type !== 'voice') return;
+function buildTeamEmbed(teams, teamSize) {
+  const selectedTeamIndex = crypto.randomInt(teams.length);
+  const fishCount = crypto.randomInt(30, 101);
+  return new EmbedBuilder()
+    .setColor(0x7c5cff)
+    .setTitle('🐧 핑구봇 팀 편성 완료!')
+    .setDescription(
+      `음성 채널 인원을 팀당 **최대 ${teamSize}명**으로 고르게 섞었어요.\n` +
+      '아래 **출동 버튼**을 누르면 팀별 음성 채널로 이동합니다.',
+    )
+    .addFields([
+      ...teams.map((team, index) => ({
+        name: `${index + 1}팀  ·  ${team.length}명`,
+        value: team.map((member) => `<@${member.id}>`).join('\n'),
+        inline: true,
+      })),
+      {
+        name: '🐟 오늘의 핑구 픽',
+        value: `**${selectedTeamIndex + 1}팀**에 생선 **${fishCount}개**를 걸었어요!`,
+        inline: false,
+      },
+    ])
+    .setFooter({ text: '마이크를 끈 인원과 봇은 팀 편성에서 제외됩니다.' })
+    .setTimestamp();
+}
 
-      team.forEach(name => {
-        const member = message.guild.members.cache.find(m => m.displayName === name);
-        if (member && member.voice.channel) {
-          member.voice.setChannel(channel).catch(err => {
-            console.error(`이동 실패: ${member.displayName}`, err.message);
-          });
+function buildMentionContent(teams) {
+  const lines = teams.map(
+    (team, index) => `**${index + 1}팀**  ${team.map((member) => `<@${member.id}>`).join(' ')}`,
+  );
+  const content = ['📣 **팀 배정 알림**', ...lines].join('\n');
+  return content.length <= 2_000 ? content : null;
+}
+
+function buildHelpEmbed() {
+  return new EmbedBuilder()
+    .setColor(0x7c5cff)
+    .setTitle('🐧 핑구봇 명령어 안내')
+    .setDescription('음성 채널에서 친구들과 더 빠르고 재미있게 모여 보세요!')
+    .addFields(
+      { name: '🎲 `!팀 인원수`', value: '현재 음성 채널 인원을 무작위로 섞어 팀을 만들어요.\n예시: `!팀 2`' },
+      { name: '🚀 팀 출동 / 🏠 해산·복귀', value: '팀 편성 메시지 아래 버튼으로 이동하고, 끝난 뒤 원래 음성 채널로 돌아와요.\n`!출동` 명령어도 계속 사용할 수 있어요.' },
+      { name: '📣 `!구인구직` 또는 `!모여라`', value: '현재 음성 채널의 1시간짜리 초대장을 예쁘게 만들어 모집해요.' },
+      { name: '💡 이용 팁', value: '먼저 음성 채널에 입장해 주세요. 마이크를 끈 인원과 봇은 팀 편성에서 제외돼요.' },
+    )
+    .setFooter({ text: '핑구봇과 즐거운 게임 되세요!' })
+    .setTimestamp();
+}
+
+function buildRecruitEmbed(message, voiceChannel, currentMembers, remainingMembers, expiresAt) {
+  const statusText = remainingMembers > 0 ? `앞으로 **${remainingMembers}명** 더 모이면 출발!` : '**현재 정원이에요!**';
+  return new EmbedBuilder()
+    .setColor(0xf062d0)
+    .setAuthor({ name: `${message.member.displayName}님의 파티 모집`, iconURL: message.author.displayAvatarURL() })
+    .setTitle('🐧 같이 게임할 사람, 여기 모여라!')
+    .setDescription(`### 🔊 ${voiceChannel.name}\n${statusText}`)
+    .addFields(
+      { name: '현재 인원', value: `👥 **${currentMembers} / ${MAX_RECRUIT_MEMBERS}명**`, inline: true },
+      { name: '남은 자리', value: `✨ **${remainingMembers}자리**`, inline: true },
+      { name: '초대장 만료', value: `<t:${expiresAt}:R>`, inline: true },
+    )
+    .setFooter({ text: '아래 버튼을 누르면 음성 채널로 바로 참여할 수 있어요.' })
+    .setTimestamp();
+}
+
+function canControlSession(userId, memberPermissions, session) {
+  return userId === session.ownerId || session.memberIds.has(userId) ||
+    memberPermissions?.has(PermissionFlagsBits.MoveMembers);
+}
+
+function summarizeMoveResults(results) {
+  return results.reduce((summary, result) => {
+    if (result.status === 'rejected') summary.failed += 1;
+    else summary[result.value] += 1;
+    return summary;
+  }, { moved: 0, skipped: 0, failed: 0 });
+}
+
+async function dispatchTeams(guild, session) {
+  const tasks = [];
+  session.teams.forEach((team, teamIndex) => {
+    const targetChannel = guild.channels.cache.get(TEAM_CHANNEL_IDS[teamIndex]);
+    team.forEach((memberId) => {
+      tasks.push((async () => {
+        const member = guild.members.cache.get(memberId);
+        if (!member?.voice.channelId) return 'skipped';
+        if (!targetChannel || targetChannel.type !== ChannelType.GuildVoice) {
+          throw new Error(`${teamIndex + 1}팀 음성 채널을 찾을 수 없습니다.`);
         }
-      });
+        session.originalChannels.set(memberId, member.voice.channelId);
+        if (member.voice.channelId === targetChannel.id) return 'skipped';
+        await member.voice.setChannel(targetChannel, '핑구봇 팀 출동');
+        return 'moved';
+      })());
     });
+  });
+  return summarizeMoveResults(await Promise.allSettled(tasks));
+}
 
-    message.channel.send('모든 인원을 팀별 채널로 이동시켰습니다!');
+async function returnTeams(guild, session) {
+  const tasks = [...session.memberIds].map(async (memberId) => {
+    const member = guild.members.cache.get(memberId);
+    const originalChannelId = session.originalChannels.get(memberId);
+    // 이미 음성 채널을 나간 사람은 조용히 건너뜁니다.
+    if (!member?.voice.channelId || !originalChannelId) return 'skipped';
+    const originalChannel = guild.channels.cache.get(originalChannelId);
+    if (!originalChannel || originalChannel.type !== ChannelType.GuildVoice) return 'skipped';
+    if (member.voice.channelId === originalChannel.id) return 'skipped';
+    await member.voice.setChannel(originalChannel, '핑구봇 팀 해산 및 복귀');
+    return 'moved';
+  });
+  return summarizeMoveResults(await Promise.allSettled(tasks));
+}
+
+async function updateSessionButtons(guild, session, state) {
+  try {
+    const channel = guild.channels.cache.get(session.textChannelId);
+    if (!channel?.isTextBased()) return;
+    const teamMessage = await channel.messages.fetch(session.messageId);
+    await teamMessage.edit({ components: [buildTeamButtons(session.id, state)] });
+  } catch (error) {
+    console.warn('팀 편성 메시지 버튼 갱신 실패:', error.message);
   }
+}
 
-  // !구인구직 또는 !모여라 명령어
-  if (command === '구인구직' || command === '모여라') {
-    const maxMembers = 4;
+function formatMoveSummary(action, summary) {
+  const details = [`이동 ${summary.moved}명`];
+  if (summary.skipped > 0) details.push(`건너뜀 ${summary.skipped}명`);
+  if (summary.failed > 0) details.push(`실패 ${summary.failed}명`);
+  return `${action} 완료! (${details.join(' · ')})`;
+}
 
-    if (!message.member.voice.channel) {
-      return message.reply('먼저 음성 채널에 들어가주세요!');
+async function handleTeamCommand(message, args) {
+  const teamSize = Number.parseInt(args[0], 10);
+  if (!Number.isInteger(teamSize) || teamSize < 1) {
+    await message.reply('팀당 인원수를 숫자로 입력해 주세요. 예: `!팀 2`');
+    return;
+  }
+  const voiceChannel = message.member.voice.channel;
+  if (!voiceChannel) {
+    await message.reply('먼저 음성 채널에 들어가 주세요!');
+    return;
+  }
+  const activeSession = teamSessions.get(message.guild.id);
+  if (activeSession?.inProgress) {
+    await message.reply('현재 팀 이동을 처리하고 있어요. 완료된 뒤 다시 시도해 주세요.');
+    return;
+  }
+  if (activeSession?.dispatched) {
+    await message.reply('출동 중인 팀이 있어요. 기존 팀 편성 메시지에서 **해산·복귀**한 뒤 새 팀을 만들어 주세요.');
+    return;
+  }
+  const members = [...voiceChannel.members.values()].filter(
+    (member) => !member.user.bot && !member.voice.selfMute && !member.voice.serverMute,
+  );
+  if (members.length < teamSize) {
+    await message.reply(`참여 가능한 인원이 부족해요. 현재 팀 편성 가능 인원은 **${members.length}명**입니다.`);
+    return;
+  }
+  const teamCount = Math.ceil(members.length / teamSize);
+  if (teamCount > TEAM_CHANNEL_IDS.length) {
+    await message.reply(`팀 채널은 최대 **${TEAM_CHANNEL_IDS.length}개**까지 사용할 수 있어요. 팀당 인원수를 늘려 주세요.`);
+    return;
+  }
+  const teams = splitIntoTeams(members, teamSize);
+  const sessionId = crypto.randomBytes(6).toString('hex');
+  const memberIds = new Set(teams.flat().map((member) => member.id));
+  const session = {
+    id: sessionId, ownerId: message.author.id, memberIds,
+    teams: teams.map((team) => team.map((member) => member.id)),
+    originalChannels: new Map(), textChannelId: message.channel.id,
+    messageId: null, dispatched: false, inProgress: false,
+  };
+  const mentionContent = buildMentionContent(teams);
+  const sentMessage = await message.channel.send({
+    content: mentionContent ?? '📣 **팀 편성이 완료됐어요! 아래에서 내 팀을 확인하세요.**',
+    embeds: [buildTeamEmbed(teams, teamSize)],
+    components: [buildTeamButtons(sessionId)],
+    allowedMentions: { users: [...memberIds] },
+  });
+  session.messageId = sentMessage.id;
+  teamSessions.set(message.guild.id, session);
+}
+
+async function handleRecruitCommand(message) {
+  const voiceChannel = message.member.voice.channel;
+  if (!voiceChannel) {
+    await message.reply('먼저 음성 채널에 들어가 주세요!');
+    return;
+  }
+  const invite = await voiceChannel.createInvite({
+    maxAge: INVITE_MAX_AGE_SECONDS, maxUses: 0, unique: true,
+    reason: `${message.author.tag}님의 핑구봇 구인구직`,
+  });
+  const currentMembers = voiceChannel.members.filter((member) => !member.user.bot).size;
+  const remainingMembers = Math.max(MAX_RECRUIT_MEMBERS - currentMembers, 0);
+  const expiresAt = Math.floor(Date.now() / 1_000) + INVITE_MAX_AGE_SECONDS;
+  const joinButton = new ButtonBuilder()
+    .setLabel('음성 채널 참여하기').setEmoji('🎮')
+    .setStyle(ButtonStyle.Link).setURL(invite.url);
+  await message.channel.send({
+    content: `📣 <@${message.author.id}>님이 함께할 파티원을 찾고 있어요!`,
+    embeds: [buildRecruitEmbed(message, voiceChannel, currentMembers, remainingMembers, expiresAt)],
+    components: [new ActionRowBuilder().addComponents(joinButton)],
+    allowedMentions: { users: [message.author.id] },
+  });
+}
+
+async function handleLegacyDispatchCommand(message) {
+  const session = teamSessions.get(message.guild.id);
+  if (!session) {
+    await message.reply('먼저 `!팀 인원수`로 팀을 만들어 주세요.');
+    return;
+  }
+  if (session.dispatched) {
+    await message.reply('이미 팀별 채널로 출동했어요. 팀 편성 메시지의 복귀 버튼을 이용해 주세요.');
+    return;
+  }
+  if (session.inProgress) {
+    await message.reply('이미 팀 이동을 처리하고 있어요. 잠시만 기다려 주세요.');
+    return;
+  }
+  if (!canControlSession(message.author.id, message.member.permissions, session)) {
+    await message.reply('팀 참가자 또는 멤버 이동 권한이 있는 사람만 출동시킬 수 있어요.');
+    return;
+  }
+  const progressMessage = await message.reply('🚀 팀별 음성 채널로 이동하고 있어요...');
+  session.inProgress = true;
+  try {
+    const summary = await dispatchTeams(message.guild, session);
+    session.dispatched = true;
+    await updateSessionButtons(message.guild, session, 'dispatched');
+    await progressMessage.edit(formatMoveSummary('🚀 출동', summary));
+  } finally {
+    session.inProgress = false;
+  }
+}
+
+async function handleMessage(message) {
+  if (!message.guild || message.author.bot || !message.content.startsWith(PREFIX)) return;
+  const args = message.content.slice(PREFIX.length).trim().split(/\s+/);
+  const command = args.shift()?.toLowerCase();
+  try {
+    if (command === '팀') await handleTeamCommand(message, args);
+    else if (command === '출동') await handleLegacyDispatchCommand(message);
+    else if (command === '구인구직' || command === '모여라') await handleRecruitCommand(message);
+    else if (command === '핑구봇명령어' || command === '핑구봇사용법') {
+      await message.channel.send({ embeds: [buildHelpEmbed()] });
     }
-
-    const invite = await message.member.voice.channel.createInvite({
-      maxAge: 3600,
-    });
-
-    const voiceChannelName = message.member.voice.channel.name;
-    const currentMembers = message.member.voice.channel.members.size;
-    const remainingMembers = Math.max(maxMembers - currentMembers, 0);
-
-    const colors = ['#FF5733', '#C70039', '#900C3F', '#581845', '#2E86C1', '#2ECC71', '#F1C40F', '#8E44AD'];
-    const selectedColor = colors[Math.floor(Math.random() * colors.length)];
-
-    const inviteMessage = new Discord.MessageEmbed()
-      .setTitle(`:loud_sound: ${voiceChannelName} 구인구직 합니다!!! \n${remainingMembers}명 구인 구직 중이에요`)
-      .setColor(selectedColor)
-      .setFooter('해당링크는 1시간 후 자동으로 소멸됩니다.')
-      .setTimestamp();
-
-    message.channel.send(inviteMessage);
-    message.channel.send(invite.url);
+  } catch (error) {
+    console.error(`명령어 처리 실패 (${command}):`, error);
+    await message.reply('명령어를 처리하는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.').catch(() => {});
   }
+}
 
-  // !핑구봇사용법 명령어
-  if (message.content === '!핑구봇사용법') {
-    message.channel.send(
-      `**구인구직 사용방법!**\n음성채널 입장 후 \`\`!구인구직\`\` 입력하면 자동으로 초대링크 생성\n\n` +
-      `**팀 짜기 사용방법!**\n음성채널 입장 후 \`\`!팀 N\`\` (N=원하는 명수) 입력 시 음성채널에 있는 인원을 N명만큼 팀 나눠짐\n[마이크 끄기 되어있는 인원은 미포함]\n Dobi#free_dobi `
-    );
+async function handleButton(interaction) {
+  if (!interaction.isButton() || !interaction.customId.startsWith('team:')) return;
+  const [, action, sessionId] = interaction.customId.split(':');
+  const session = teamSessions.get(interaction.guildId);
+  if (!session || session.id !== sessionId) {
+    await interaction.reply({ content: '이 팀 편성은 만료됐어요. `!팀 인원수`로 새로 만들어 주세요.', flags: MessageFlags.Ephemeral });
+    return;
   }
-});
-client.login('MTA1Nzk1MzU5OTQ4Njk1MTUwNA.GIyay_.pTy7tZ2NHjqPA_fPIA2BdlboSkMQWYrNO6H5X4');
+  if (!canControlSession(interaction.user.id, interaction.memberPermissions, session)) {
+    await interaction.reply({ content: '팀 참가자 또는 멤버 이동 권한이 있는 사람만 사용할 수 있어요.', flags: MessageFlags.Ephemeral });
+    return;
+  }
+  if (session.inProgress) {
+    await interaction.reply({ content: '이미 팀 이동을 처리하고 있어요. 잠시만 기다려 주세요.', flags: MessageFlags.Ephemeral });
+    return;
+  }
+  if (action === 'dispatch') {
+    if (session.dispatched) {
+      await interaction.reply({ content: '이미 출동한 팀이에요.', flags: MessageFlags.Ephemeral });
+      return;
+    }
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    session.inProgress = true;
+    try {
+      const summary = await dispatchTeams(interaction.guild, session);
+      session.dispatched = true;
+      await updateSessionButtons(interaction.guild, session, 'dispatched');
+      await interaction.editReply(formatMoveSummary('🚀 출동', summary));
+    } finally {
+      session.inProgress = false;
+    }
+    return;
+  }
+  if (action === 'return') {
+    if (!session.dispatched) {
+      await interaction.reply({ content: '아직 출동하지 않은 팀이에요.', flags: MessageFlags.Ephemeral });
+      return;
+    }
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    session.inProgress = true;
+    try {
+      const summary = await returnTeams(interaction.guild, session);
+      await updateSessionButtons(interaction.guild, session, 'completed');
+      teamSessions.delete(interaction.guildId);
+      await interaction.editReply(formatMoveSummary('🏠 해산·복귀', summary));
+    } finally {
+      session.inProgress = false;
+    }
+  }
+}
+
+function createClient() {
+  const client = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent, GatewayIntentBits.GuildVoiceStates],
+  });
+  client.once(Events.ClientReady, (readyClient) => console.log(`핑구봇 로그인 완료: ${readyClient.user.tag}`));
+  client.on(Events.MessageCreate, handleMessage);
+  client.on(Events.InteractionCreate, handleButton);
+  client.on(Events.Error, (error) => console.error('Discord 클라이언트 오류:', error));
+  return client;
+}
+
+async function startBot() {
+  const token = process.env.DISCORD_TOKEN;
+  if (!token) throw new Error('DISCORD_TOKEN 환경변수가 없습니다. Heroku Config Vars에 등록해 주세요.');
+  const client = createClient();
+  await client.login(token);
+}
+
+if (require.main === module) {
+  startBot().catch((error) => {
+    console.error('핑구봇 시작 실패:', error.message);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  buildHelpEmbed,
+  buildMentionContent,
+  buildTeamButtons,
+  buildTeamEmbed,
+  shuffleMembers,
+  splitIntoTeams,
+};

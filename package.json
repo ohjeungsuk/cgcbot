@@ -1,12 +1,16 @@
 {
-  "name": "pingbot",
-  "version": "1.0.0",
-  "description": "",
+  "name": "pingubot",
+  "version": "2.0.0",
+  "description": "핑구봇 Discord 음성 채널 팀 편성 및 구인 봇",
   "main": "index.js",
   "scripts": {
-    "a": "node index.js"
+    "start": "node index.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": "24.x"
   },
   "dependencies": {
-    "discord.js": "^12.5.3"
+    "discord.js": "14.27.0"
   }
 }
