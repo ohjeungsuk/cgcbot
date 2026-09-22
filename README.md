@@ -7,7 +7,7 @@ Discord 음성 채널의 팀 편성, 팀별 채널 이동, 원래 채널 복귀�
 - Config Vars에 `DISCORD_TOKEN`을 등록합니다.
 - Discord Developer Portal의 **Bot → Privileged Gateway Intents**에서 **Message Content Intent**를 켭니다.
 - 봇 역할에는 채널 보기, 메시지 보내기, 메시지 기록 보기, 메시지 관리, 역할 관리, 링크 첨부, 음성 채널 연결, 초대장 만들기, 멤버 이동 권한이 필요합니다.
-- `CGC:외출중` 역할은 핑구봇 역할보다 아래에 배치합니다.
+- 외출 역할 ID는 `998138756739633204`이며, 해당 역할은 핑구봇 역할보다 아래에 배치합니다.
 - Discord 사용자 `393017142087516160`은 핑구봇 내부 관리자 권한을 가집니다.
 - Heroku worker는 `Procfile`의 `worker: node index.js`로 실행됩니다.
 
