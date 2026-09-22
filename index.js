@@ -7,7 +7,7 @@ const {
 const PREFIX = '!';
 const MAX_RECRUIT_MEMBERS = 4;
 const INVITE_MAX_AGE_SECONDS = 60 * 60;
-const OUTING_ROLE_NAME = '외출';
+const OUTING_ROLE_NAME = 'CGC:외출중';
 const OUTING_LOG_MARKER = '핑구봇 외출 로그 채널';
 const BOT_MANAGER_USER_IDS = new Set(['393017142087516160']);
 const TEAM_CHANNEL_IDS = [
@@ -64,10 +64,10 @@ function buildOutingPanel() {
       '다시 돌아오면 **복귀** 버튼을 누르면 됩니다.',
     )
     .addFields(
-      { name: '🚶 외출', value: '`외출` 역할을 부여합니다.', inline: true },
-      { name: '🏠 복귀', value: '`외출` 역할을 제거합니다.', inline: true },
+      { name: '🚶 외출', value: '`CGC:외출중` 역할을 부여합니다.', inline: true },
+      { name: '🏠 복귀', value: '`CGC:외출중` 역할을 제거합니다.', inline: true },
     )
-    .setFooter({ text: '기존 역할은 변경되지 않으며 외출 역할만 추가하거나 제거합니다.' });
+    .setFooter({ text: '기존 역할은 변경되지 않으며 CGC:외출중 역할만 추가하거나 제거합니다.' });
 
   const buttons = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -200,12 +200,12 @@ function findOutingRole(guild) {
 
 function getOutingRoleError(guild, role) {
   const botMember = guild.members.me;
-  if (!role) return '`외출` 역할을 찾을 수 없어요. 역할을 먼저 만들어 주세요.';
+  if (!role) return '`CGC:외출중` 역할을 찾을 수 없어요. 역할 이름을 확인해 주세요.';
   if (!botMember?.permissions.has(PermissionFlagsBits.ManageRoles)) {
     return '핑구봇에게 **역할 관리** 권한이 필요합니다.';
   }
   if (botMember.roles.highest.comparePositionTo(role) <= 0) {
-    return '서버 역할 설정에서 **핑구봇 역할을 외출 역할보다 위로** 올려 주세요.';
+    return '서버 역할 설정에서 **핑구봇 역할을 CGC:외출중 역할보다 위로** 올려 주세요.';
   }
   return null;
 }

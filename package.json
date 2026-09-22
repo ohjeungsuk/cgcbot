@@ -1,6 +1,6 @@
 {
   "name": "pingubot",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "핑구봇 Discord 음성 채널 팀 편성 및 구인 봇",
   "main": "index.js",
   "scripts": {

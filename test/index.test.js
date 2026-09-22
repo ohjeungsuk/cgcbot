@@ -76,6 +76,7 @@ test('team and help UI components serialize for Discord API v14', () => {
   assert.equal(teamEmbed.fields.length, 3);
   assert.equal(helpEmbed.fields.length, 5);
   assert.equal(outingPanel.embeds[0].toJSON().title, '🐧 외출 · 복귀 상태 관리');
+  assert.match(outingPanel.embeds[0].toJSON().fields[0].value, /CGC:외출중/);
   assert.equal(outingButtons.components[0].custom_id, 'outing:leave');
   assert.equal(outingButtons.components[1].custom_id, 'outing:return');
   assert.equal(readyButtons.components[0].disabled, false);
