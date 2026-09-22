@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { Collection } = require('discord.js');
 const {
+  buildChatClearConfirmation,
   buildHelpEmbed,
   buildMentionContent,
   buildOutingLogEntry,
@@ -8,6 +10,7 @@ const {
   buildOutingPanel,
   buildTeamButtons,
   buildTeamEmbed,
+  clearChannelMessages,
   isBotManager,
   shuffleMembers,
   splitIntoTeams,
@@ -26,6 +29,37 @@ test('configured bot manager receives the administrator override', () => {
   const noDiscordPermissions = { has: () => false };
   assert.equal(isBotManager('393017142087516160', noDiscordPermissions), true);
   assert.equal(isBotManager('111111111111111111', noDiscordPermissions), false);
+});
+
+test('chat clear confirmation targets only the requested channel', () => {
+  const confirmation = buildChatClearConfirmation('123456789012345678', 1_700_000_000);
+  const embed = confirmation.embeds[0].toJSON();
+  const buttons = confirmation.components[0].toJSON().components;
+
+  assert.equal(embed.title, '⚠️ 현재 채널 전체 삭제');
+  assert.equal(buttons[0].custom_id, 'chatclear:confirm:123456789012345678:1700000000');
+  assert.equal(buttons[1].custom_id, 'chatclear:cancel:123456789012345678:1700000000');
+});
+
+test('clearChannelMessages deletes messages fetched only from the supplied channel', async () => {
+  const messages = new Collection([
+    ['2', { id: '2', createdTimestamp: Date.now(), deletable: true }],
+    ['1', { id: '1', createdTimestamp: Date.now(), deletable: true }],
+  ]);
+  let fetchCount = 0;
+  const channel = {
+    messages: {
+      fetch: async () => {
+        fetchCount += 1;
+        return messages;
+      },
+    },
+    bulkDelete: async (selected) => selected,
+  };
+
+  const result = await clearChannelMessages(channel);
+  assert.deepEqual(result, { deleted: 2, failed: 0 });
+  assert.equal(fetchCount, 1);
 });
 
 test('outing log embeds serialize leave and return records', () => {
@@ -74,7 +108,7 @@ test('team and help UI components serialize for Discord API v14', () => {
   const dispatchedButtons = buildTeamButtons('session', 'dispatched').toJSON();
 
   assert.equal(teamEmbed.fields.length, 3);
-  assert.equal(helpEmbed.fields.length, 5);
+  assert.equal(helpEmbed.fields.length, 6);
   assert.equal(outingPanel.embeds[0].toJSON().title, '🐧 외출 · 복귀 상태 관리');
   assert.match(outingPanel.embeds[0].toJSON().fields[0].value, /998138756739633204/);
   assert.equal(outingButtons.components[0].custom_id, 'outing:leave');

@@ -9,7 +9,9 @@ const MAX_RECRUIT_MEMBERS = 4;
 const INVITE_MAX_AGE_SECONDS = 60 * 60;
 const OUTING_ROLE_ID = '998138756739633204';
 const OUTING_LOG_MARKER = '핑구봇 외출 로그 채널';
-const BOT_MANAGER_USER_IDS = new Set(['393017142087516160']);
+const BOT_OWNER_USER_ID = '393017142087516160';
+const BOT_MANAGER_USER_IDS = new Set([BOT_OWNER_USER_ID]);
+const CHAT_CLEAR_CONFIRM_SECONDS = 60;
 const TEAM_CHANNEL_IDS = [
   '835845662758797312', '835845625957711893', '835845808212541442',
   '835845743842951168', '835845775740502096', '937670883944857620',
@@ -80,6 +82,31 @@ function buildOutingPanel() {
       .setLabel('복귀')
       .setEmoji('🏠')
       .setStyle(ButtonStyle.Success),
+  );
+
+  return { embeds: [embed], components: [buttons] };
+}
+
+function buildChatClearConfirmation(channelId, requestedAt = Math.floor(Date.now() / 1_000)) {
+  const embed = new EmbedBuilder()
+    .setColor(0xed4245)
+    .setTitle('⚠️ 현재 채널 전체 삭제')
+    .setDescription(
+      '이 채널의 메시지를 **가능한 범위에서 모두 삭제**합니다.\n' +
+      '고정 메시지와 핑구봇 패널도 함께 삭제되며 복구할 수 없습니다.',
+    )
+    .setFooter({ text: `${CHAT_CLEAR_CONFIRM_SECONDS}초 안에 확인 버튼을 눌러 주세요.` });
+
+  const buttons = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`chatclear:confirm:${channelId}:${requestedAt}`)
+      .setLabel('현재 채널 전체 삭제')
+      .setEmoji('🗑️')
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId(`chatclear:cancel:${channelId}:${requestedAt}`)
+      .setLabel('취소')
+      .setStyle(ButtonStyle.Secondary),
   );
 
   return { embeds: [embed], components: [buttons] };
@@ -161,6 +188,7 @@ function buildHelpEmbed() {
       { name: '🚀 팀 출동 / 🏠 해산·복귀', value: '팀 편성 메시지 아래 버튼으로 이동하고, 끝난 뒤 원래 음성 채널로 돌아와요.\n`!출동` 명령어도 계속 사용할 수 있어요.' },
       { name: '📣 `!구인구직` 또는 `!모여라`', value: '현재 음성 채널의 1시간짜리 초대장을 예쁘게 만들어 모집해요.' },
       { name: '🚶 외출 · 복귀', value: '외출 관리 채널에서 버튼으로 상태를 변경해요.\n관리자: `!외출`, `!외출로그`' },
+      { name: '🛡️ 핑구봇 소유자', value: '`!채팅삭제`로 명령어를 입력한 현재 채널만 확인 후 정리할 수 있어요.' },
       { name: '💡 이용 팁', value: '먼저 음성 채널에 입장해 주세요. 마이크를 끈 인원과 봇은 팀 편성에서 제외돼요.' },
     )
     .setFooter({ text: '핑구봇과 즐거운 게임 되세요!' })
@@ -498,6 +526,80 @@ async function handleOutingLogCommand(message) {
   }
 }
 
+async function handleChatClearCommand(message) {
+  if (message.author.id !== BOT_OWNER_USER_ID) {
+    await message.reply('이 명령어는 핑구봇 소유자만 사용할 수 있어요.');
+    return;
+  }
+
+  const botPermissions = message.guild.members.me.permissionsIn(message.channel);
+  if (!botPermissions.has(PermissionFlagsBits.ManageMessages) ||
+      !botPermissions.has(PermissionFlagsBits.ReadMessageHistory)) {
+    await message.reply('핑구봇에게 이 채널의 **메시지 관리**와 **메시지 기록 보기** 권한이 필요합니다.');
+    return;
+  }
+
+  await message.channel.send(buildChatClearConfirmation(message.channel.id));
+}
+
+async function deleteMessagesIndividually(messages) {
+  let deleted = 0;
+  let failed = 0;
+  for (const message of messages.values()) {
+    if (!message.deletable) {
+      failed += 1;
+      continue;
+    }
+    try {
+      await message.delete();
+      deleted += 1;
+    } catch {
+      failed += 1;
+    }
+  }
+  return { deleted, failed };
+}
+
+async function clearChannelMessages(channel) {
+  const fourteenDaysAgo = Date.now() - (14 * 24 * 60 * 60 * 1_000) + 10_000;
+  let before;
+  let totalDeleted = 0;
+  let totalFailed = 0;
+
+  while (true) {
+    const batch = await channel.messages.fetch({ limit: 100, ...(before ? { before } : {}) });
+    if (batch.size === 0) break;
+    before = batch.last().id;
+
+    const recent = batch.filter((message) => message.createdTimestamp > fourteenDaysAgo && message.deletable);
+    const oldOrRestricted = batch.filter((message) => !recent.has(message.id));
+
+    if (recent.size > 1) {
+      try {
+        const deleted = await channel.bulkDelete(recent, true);
+        totalDeleted += deleted.size;
+        totalFailed += recent.size - deleted.size;
+      } catch {
+        const result = await deleteMessagesIndividually(recent);
+        totalDeleted += result.deleted;
+        totalFailed += result.failed;
+      }
+    } else if (recent.size === 1) {
+      const result = await deleteMessagesIndividually(recent);
+      totalDeleted += result.deleted;
+      totalFailed += result.failed;
+    }
+
+    const oldResult = await deleteMessagesIndividually(oldOrRestricted);
+    totalDeleted += oldResult.deleted;
+    totalFailed += oldResult.failed;
+
+    if (batch.size < 100) break;
+  }
+
+  return { deleted: totalDeleted, failed: totalFailed };
+}
+
 async function handleMessage(message) {
   if (!message.guild || message.author.bot || !message.content.startsWith(PREFIX)) return;
   const args = message.content.slice(PREFIX.length).trim().split(/\s+/);
@@ -508,6 +610,7 @@ async function handleMessage(message) {
     else if (command === '구인구직' || command === '모여라') await handleRecruitCommand(message);
     else if (command === '외출') await handleOutingPanelCommand(message);
     else if (command === '외출로그') await handleOutingLogCommand(message);
+    else if (command === '채팅삭제') await handleChatClearCommand(message);
     else if (command === '핑구봇명령어' || command === '핑구봇사용법') {
       await message.channel.send({ embeds: [buildHelpEmbed()] });
     }
@@ -552,6 +655,40 @@ async function handleOutingButton(interaction) {
       console.warn('복귀 기록 저장 실패:', error.message),
     );
   }
+}
+
+async function handleChatClearButton(interaction) {
+  if (interaction.user.id !== BOT_OWNER_USER_ID) {
+    await interaction.reply({ content: '이 버튼은 핑구봇 소유자만 사용할 수 있어요.', flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const [, action, channelId, requestedAtText] = interaction.customId.split(':');
+  if (interaction.channelId !== channelId) {
+    await interaction.reply({ content: '삭제 요청 채널이 일치하지 않아요.', flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const requestedAt = Number.parseInt(requestedAtText, 10);
+  const isExpired = !Number.isInteger(requestedAt) ||
+    Math.floor(Date.now() / 1_000) - requestedAt > CHAT_CLEAR_CONFIRM_SECONDS;
+  if (isExpired) {
+    await interaction.reply({ content: '삭제 확인 시간이 만료됐어요. `!채팅삭제`를 다시 입력해 주세요.', flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  if (action === 'cancel') {
+    await interaction.deferUpdate();
+    await interaction.message.delete().catch(() => {});
+    return;
+  }
+
+  if (action !== 'confirm') return;
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  const result = await clearChannelMessages(interaction.channel);
+  const details = [`삭제 ${result.deleted}개`];
+  if (result.failed > 0) details.push(`삭제 불가 ${result.failed}개`);
+  await interaction.editReply(`🗑️ 현재 채널 정리를 완료했어요. (${details.join(' · ')})`);
 }
 
 async function handleTeamButton(interaction) {
@@ -612,6 +749,8 @@ async function handleButton(interaction) {
       await handleOutingButton(interaction);
     } else if (interaction.customId.startsWith('team:')) {
       await handleTeamButton(interaction);
+    } else if (interaction.customId.startsWith('chatclear:')) {
+      await handleChatClearButton(interaction);
     }
   } catch (error) {
     console.error(`버튼 처리 실패 (${interaction.customId}):`, error);
@@ -652,6 +791,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildChatClearConfirmation,
   buildHelpEmbed,
   buildMentionContent,
   buildOutingLogEntry,
@@ -659,6 +799,7 @@ module.exports = {
   buildOutingPanel,
   buildTeamButtons,
   buildTeamEmbed,
+  clearChannelMessages,
   isBotManager,
   shuffleMembers,
   splitIntoTeams,
